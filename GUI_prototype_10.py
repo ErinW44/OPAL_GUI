@@ -80,12 +80,14 @@ class Gui():
 			self.root = tk.Tk()	
 			self.end_button = tk.Button(self.root, text = "Finish Program", command = self.root.destroy)
 			self.end_button.grid()
+			self.invalid_label = tk.Label(self.root, text = "")
+			self.invalid_label.grid(row = 11, column = 0, sticky = "s")
 		
 		#Find image files	
 		self.cart_photo = tk.PhotoImage(file="scaling_ffa_map_cart.png")
 		self.cyl_photo = tk.PhotoImage(file="scaling_ffa_map_cyl.png")
 		
-		self.r_label = tk.Label(self.root, text = "Radius of ring")
+		self.r_label = tk.Label(self.root, text = "Radius of ring (0 to 4 [m])")
 		self.r_label.grid()
 		self.r_entry = tk.Entry(self.root)
 		self.r_entry.grid()
@@ -134,24 +136,28 @@ class Gui():
 		'''
 		invalid_flag = False
 		radius_check = self.r_entry.get()
-		valid = validate_input(radius_check, MIN_FLOAT, 4)
+		valid, message = validate_input(radius_check, MIN_FLOAT, 4)
+		
 		if valid != None:
 			self.radius = valid
 		else:
 			invalid_flag = True
+			display_message = message
 		
-		if self.ring_flag == False:	
+		if invalid_flag == False and self.ring_flag == False:
 			beam_settings = []
 			for i in range(0, len(self.input_list)):
 				setting = self.input_list[i][0].get()
 				bounds = self.input_list[i][1]
-				valid = validate_input(setting, bounds[0], bounds[1])
+				valid, message = validate_input(setting, bounds[0], bounds[1])
 
 				if valid == None:
 					invalid_flag = True
+					display_message = message
 				else:
 					beam_settings.append(valid)
-					
+						
+		if self.ring_flag == False:				
 			for i in self.ring_widget_list:
 				i.destroy()
 				
@@ -164,16 +170,16 @@ class Gui():
 				
 		if invalid_flag == True:
 			self.keep_window = True
-			print("invalid")
 			self.make_interface(OPAL_list, py_list, beam_list)
+			self.invalid_label.config(text = display_message)
 		else:
 			if self.ring_flag == False:
+				self.invalid_label.config(text = "")
 				particle = self.particle_choice.get().upper()
 				gamma = beam_settings[0]
 				start_coords = [beam_settings[1], beam_settings[2], beam_settings[3], beam_settings[4], beam_settings[5], beam_settings[6]]
 				self.set_beam(beam_list, particle, gamma, start_coords)
 			else:
-				print(beam_list)
 				self.set_beam(beam_list, beam_list[0], beam_list[1], beam_list[2])
 				
 			self.setup_ring(OPAL_list, py_list, beam_list)
@@ -304,6 +310,7 @@ class Gui():
 		
 		#go to ring building screen
 		self.design_ring(OPAL_list, py_list, beam_list)
+		self.invalid_label.config(text = "")
 		
 	def design_ring(self, OPAL_list, py_list, beam_list):
 		'''Displays widgets for building the ring
@@ -458,12 +465,15 @@ class Gui():
 			bounds_list = self.BOUNDS_DICT[new_element]
 			lower_bound = bounds_list[i][0]
 			upper_bound = bounds_list[i][1]
-			valid = validate_input(setting, lower_bound, upper_bound)
+			valid, message = validate_input(setting, lower_bound, upper_bound)
 			if valid == None:
 				invalid_input = True
+				display_message = message
 			else:
 				self.chosen_settings.append(valid)
+				
 		if invalid_input == False:
+			self.invalid_label.config(text = "")
 			if new_element == "Scaling FFA magnet":
 				self.options_window.destroy()
 				self.add_ffa_mag(py_list)
@@ -478,6 +488,7 @@ class Gui():
 				self.confirm.configure(command = lambda: self.get_rf_dimensions(py_list))
 		else:
 			self.options_window.destroy()
+			self.invalid_label.config(text = display_message)
 			self.add_button.grid(row = 5, column = 0)
 		
 	def get_orders(self, py_list):
@@ -504,18 +515,21 @@ class Gui():
 		invalid_input = False
 		for i in range(0, len(self.options_window.slider_list)):
 			field = self.options_window.slider_list[i][1].get()
-			valid = validate_input(field, -2, 2)
+			valid, message = validate_input(field, -2, 2)
 			if valid != None:
 				t_p.append(valid)
 			else:
+				display_message = message
 				invalid_input = True
 		
 		if invalid_input == False:
 			self.chosen_settings.append(t_p)
 			self.options_window.destroy()
+			self.invalid_label.config(text = "")
 			self.add_multipole(py_list)
 		else:
 			self.options_window.destroy()
+			self.invalid_label.config(text = display_message)
 			self.add_button.grid(row = 5, column = 0)
 	
 	def get_rf_dimensions(self, py_list):
@@ -536,14 +550,18 @@ class Gui():
 			setting = scale_list[i].get()
 			lower_bound = bounds_list[i][0]
 			upper_bound = bounds_list[i][1]
-			valid = validate_input(setting, lower_bound, upper_bound)
+			valid, message = validate_input(setting, lower_bound, upper_bound)
 			if valid == None:
 				invalid_input = True
+				display_message = message
 			else:
 				self.chosen_settings.append(valid)
+				
 		if invalid_input == True:
+			self.invalid_label.config(text = "")
 			self.options_window.rf_more_options()
 		else:
+			self.invalid_label.config(text = display_message)
 			self.options_window.destroy()
 			self.add_rf(py_list)
 		
@@ -725,7 +743,8 @@ class Gui():
 			"right_fringe":0.01, 
 			"entrance_angle":0.0, 
 			"maximum_x_order":5, 
-			"bounding_box_length":100}
+			"bounding_box_length":100
+			}
 		
 		add = [{"element_type":pyopal.elements.multipolet.MultipoleT}, settings]
 		
@@ -880,7 +899,7 @@ class Gui():
 			else:
 				print("Already empty")
 		
-	def change_beam(self, beam_list):
+	def change_beam(self, beam_list, invalid_flag):
 		'''Lets user edit the beam settings
 		
 		Runs if the user presses the "change beam" button, and lets them choose new beam settings by defining a new 
@@ -906,6 +925,10 @@ class Gui():
 		self.beam_confirm = tk.Button(self.options_window, text = "Confirm", command = lambda: self.check_beam(beam_list))
 		self.beam_confirm.grid()
 		
+		if invalid_flag == True:
+			self.options_invalid_label = tk.Label(self.options_window, text = "Not valid, try again")
+			self.options_invalid_label.grid()
+		
 	def check_beam(self, beam_list):
 		'''Validates user inputs from change_beam
 		
@@ -926,7 +949,7 @@ class Gui():
 		for i in range(0, len(self.options_window.input_list)):
 			setting = self.options_window.input_list[i][0].get()
 			bounds = self.options_window.input_list[i][1]
-			valid = validate_input(setting, bounds[0], bounds[1])
+			valid, message = validate_input(setting, bounds[0], bounds[1])
 			if valid == None:
 				invalid_flag = True
 			else:
@@ -939,7 +962,7 @@ class Gui():
 			start_coords = [beam_settings[1], beam_settings[2], beam_settings[3], beam_settings[4], beam_settings[5], beam_settings[6]]
 			self.set_beam(beam_list, particle, gamma, start_coords)
 		else:
-			self.change_beam(beam_list)
+			self.change_beam(beam_list, True)
 	
 	def set_beam(self, beam_list, particle, gamma, start_coords):
 		'''Sets the chosen and validated beam settings
@@ -1037,7 +1060,7 @@ class Gui():
 		#Make new widgets
 		self.reset_ring_button = tk.Button(self.root, text = "reset ring", command = lambda: self.reset_ring(OPAL_list, py_list, beam_list))
 		self.reset_ring_button.grid(row = 9, column = 0)
-		self.reset_beam = tk.Button(self.root, text = "Change beam", command = lambda: self.change_beam(beam_list))
+		self.reset_beam = tk.Button(self.root, text = "Change beam", command = lambda: self.change_beam(beam_list, False))
 		self.reset_beam.grid(row = 6, column = 2)
 		self.restart_button = tk.Button(self.root, text = "reset all", command = lambda: self.reset(OPAL_list, py_list, beam_list))
 		self.restart_button.grid(row = 2, column = 1)
@@ -1194,12 +1217,12 @@ def validate_input(user_input, lower_bound, upper_bound):
 		user_input = float(user_input)
 	except: 
 		print("Must be numerical")
-		return
+		return None, "must be numerical"
 	if user_input >= lower_bound and user_input <= upper_bound:
-		return user_input
+		return user_input, None
 	else:
 		print("not in bounds")
-		return
+		return None, "not in bounds"
 	
 def main():
 	"""Defines the manager and lists in shared memory, then runs main code sequence
