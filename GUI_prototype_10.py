@@ -55,7 +55,7 @@ class Gui():
 		'''
 		self.fork_number = 0
 		self.keep_window = False
-		self.ring_flag = False		#Tells python if user is reseting only the ring (not beam)
+		self.ring_flag = False
 		self.make_interface(OPAL_list, py_list, beam_list)
 	
 	def make_interface(self, OPAL_list, py_list, beam_list):
@@ -88,7 +88,7 @@ class Gui():
 		self.cart_photo = tk.PhotoImage(file="scaling_ffa_map_cart.png")
 		self.cyl_photo = tk.PhotoImage(file="scaling_ffa_map_cyl.png")
 		
-		self.r_label = tk.Label(self.root, text = "Radius of ring (0 to 4 [m])")
+		self.r_label = tk.Label(self.root, text = "Radius of ring (above 0 [m])")
 		self.r_label.grid(row = 1, column = 0)
 		self.r_entry = tk.Entry(self.root)
 		self.r_entry.grid(row = 2, column = 0)
@@ -139,7 +139,7 @@ class Gui():
 		#validate radius input
 		invalid_flag = False
 		radius_check = self.r_entry.get()
-		valid, message = validate_input(radius_check, MIN_FLOAT, 4)
+		valid, message = validate_input(radius_check, MIN_FLOAT, MAX_FLOAT)
 		
 		if valid != None:
 			self.radius = valid
@@ -280,6 +280,7 @@ class Gui():
 		
 		self.cell_label = tk.Label(self.root, text = "")
 		self.cell_label.grid(row = 3)
+		self.cell_display_dict = []
 		self.cell_display = ""
 		
 		self.cell_confirm = tk.Button(self.root, text = "confirm cell", command = lambda: self.confirm_cell(OPAL_list, py_list, beam_list))
@@ -290,13 +291,35 @@ class Gui():
 		
 		self.delete_button = tk.Button(self.root, text = "delete last element", command = lambda: self.delete_element(py_list))
 		self.delete_button.grid(row = 6)
+	
+	def update_with_element(self, py_list, new_element, display_settings, length, add):
+		display = ""
+		display += new_element
+		for key in display_settings:
+			display += ", " + key + ": " + str(display_settings[key]) 
+		display += "\n"
+		
+		if self.making_cell == True:
+			self.cell_display += display
+			self.cell_label.config(text = self.cell_display)
+			self.cell_length_list.append(length)
+			self.cell_size += length
+			self.cell.append(add)
+		else:
+			self.element_display += display
+			self.element_label.config(text = self.element_display)
+			self.ring_space -= length
+			self.space_label.config(text = "Ring space: " + str(self.ring_space))
+			self.space_list.append(length)
+			py_list.append(add)
+			
 		
 	def confirm_cell(self, OPAL_list, py_list, beam_list):
 		'''Saves the cell and moves to the ring building screen.
 		
 		Moves from the cell building screen to the ring building screen, setting flags and destroying cell making
 		widgets.  
-		
+		F
 		----arguments----
 		OPAL_list
 		py_list
@@ -551,7 +574,7 @@ class Gui():
 		'''
 		invalid_input = False
 		scale_list = self.options_window.scale_list
-		bounds_list = [[MIN_FLOAT, self.ring_space],[MIN_FLOAT, 5],[MIN_FLOAT, 5]]
+		bounds_list = self.BOUNDS_DICT["RF more"]
 		for i in range(0, len(scale_list)):
 			setting = scale_list[i].get()
 			lower_bound = bounds_list[i][0]
@@ -566,7 +589,7 @@ class Gui():
 				
 		if invalid_input == True:
 			self.invalid_label.config(text = display_message)
-			self.options_window.rf_more_options()
+			self.options_window.destroy()
 		else:
 			self.invalid_label.config(text = "")
 			self.options_window.destroy()
@@ -604,7 +627,7 @@ class Gui():
 		Sets parameters from user input and defines settings as a dictionary. If making a ring, and there is enough space,
 		the magnet is added to the ring and its length subtracted from ring_space. The element and its settings are added
 		to py_list. If making a cell, the magnet size is added to the cell size and the settings appended to the cell array.
-		Either ring_display or cell_display updated with the magnet and its settings. 
+		Either element_display or cell_display updated with the magnet and its settings. 
 		
 		----arguments----
 		py_list
@@ -631,7 +654,7 @@ class Gui():
 		f_centre_length = self.chosen_settings[4]
 		f_end = f_start + f_centre_length + f_end_length * 4
 		temp_space = self.ring_space
-		temp_space -= self.runner.f_end
+		temp_space -= f_end
 		
 		#check if ring full
 		if temp_space >= 0:
@@ -652,22 +675,9 @@ class Gui():
 			
 			add = [{"element_type":pyopal.elements.scaling_ffa_magnet.ScalingFFAMagnet}, settings]
 			
-			#check if cell or ring being made
-			if self.making_cell == True:
-				self.cell_display += "Scaling FFA magnet, b0 = " + str(b0) + "k = " + str(k_value) + "\n"
-				self.cell_label.config(text = self.cell_display)
-				self.cell.append(add)
-				self.cell_size += self.runner.f_end
-				self.cell_length_list.append(self.runner.f_end)
-				
-			else:
-				self.element_display += "Scaling FFA magnet, b0 = " + str(b0) + ", k = " + str(k_value) + ", start = " + str(f_start) + ", centre length = " + str(f_centre_length) +  ", end length = " + str(f_end_length) + "\n"
-				self.element_label.config(text = self.element_display)
-				py_list.append(add)
-				self.ring_space = temp_space
-				self.space_label.config(text = "Ring space: " + str(self.ring_space))
-				self.space_list.append(self.runner.f_end)
-		
+			display_settings = {"b0": b0, "k":k_value, "start":f_start, "centre_length":f_centre_length, "end length":f_end_length}
+			self.update_with_element(py_list, "Scaling FFA magnet", display_settings, f_end, add)
+			
 		#tell user ring is full
 		else:
 			self.full_label = tk.Label(self.root, text = "Ring full. Add different element or execute")
@@ -682,7 +692,7 @@ class Gui():
 		Sets parameters from user input and defines settings and add. If the ring is being made and there is enough space,
 		adds the drift to the ring and subtracts length (calculated from angle) from ring space. The element and its settings
 		are added to py_list. If making a cell, the drift size is added to the cell size and the settings appended to the 
-		cell array. Either ring_display or cell_display updated with the magnet and its settings
+		cell array. Either element_display or cell_display updated with the magnet and its settings
 		
 		----arguments----
 		py_list
@@ -702,20 +712,10 @@ class Gui():
 		
 		add = [{"element_type":pyopal.elements.local_cartesian_offset.LocalCartesianOffset}, settings]
 		
-		if self.making_cell == True:
-			self.cell_display += "Drift, angle = " + str(req_angle) + "\n"
-			self.cell_label.config(text = self.cell_display)
-			self.cell.append(add)
-			self.cell_size += (self.radius * req_angle)
-			self.cell_length_list.append(self.radius * req_angle)
-		else:
-			py_list.append(add)
-			self.ring_space -= (self.radius * req_angle)
-			self.element_display += "Drift, angle = " + str(req_angle) + "\n"
-			self.element_label.config(text = self.element_display)
-			self.space_label.config(text = "Ring space: " + str(self.ring_space))
-			self.space_list.append(self.radius * req_angle)
-
+		display_settings = {"angle": req_angle}
+		length = self.radius * req_angle
+		self.update_with_element(py_list, "Drift", display_settings, length, add)
+		
 		self.add_button.grid(row = 5, column = 0)
 		
 	def add_multipole(self, py_list):
@@ -724,7 +724,7 @@ class Gui():
 		Sets list of field strengths and length from user input and defines settings and add. If the ring is being made,
 		adds the drift to the ring and subtracts length from ring space. The element and its settings are added to py_list. 
 		If making a cell, the length is added to the cell size and the settings appended to the cell array. Either
-		ring_display or cell_display updated with the magnet and its settings. Note that the bounds of length were defined 
+		element_display or cell_display updated with the magnet and its settings. Note that the bounds of length were defined 
 		by ring_space, so no need to check if ring is full.
 		
 		----arguments----
@@ -735,8 +735,11 @@ class Gui():
 		angle: float
 			angle taken up by multipole (from centre of ring) [m]. Calculated from length
 		'''
+
 		length = self.chosen_settings[0]
-		t_p = self.chosen_settings[2]
+		horizontal_aperture = self.chosen_settings[1]
+		vertical_aperture = self.chosen_settings[2]
+		t_p = self.chosen_settings[4]
 		angle = np.arccos(1 - length ** 2 / (2 * self.radius ** 2))
 		
 		settings = {
@@ -744,8 +747,8 @@ class Gui():
 			"angle":angle, 
 			"length":length, 
 			"maximum_f_order":5, 
-			"horizontal_aperture":0.5, 
-			"vertical_aperture":0.5, 
+			"horizontal_aperture":horizontal_aperture, 
+			"vertical_aperture":vertical_aperture, 
 			"left_fringe":0.01, 
 			"right_fringe":0.01, 
 			"entrance_angle":0.0, 
@@ -755,20 +758,9 @@ class Gui():
 		
 		add = [{"element_type":pyopal.elements.multipolet.MultipoleT}, settings]
 		
-		if self.making_cell == True:
-			self.cell_display += "Multipole, length = " + str(length) + "field = " + str(t_p) + "\n"
-			self.cell_label.config(text = self.cell_display)
-			self.cell.append(add)
-			self.cell_size += (angle*self.radius)
-			self.cell_length_list.append(angle*self.radius)
-		else:
-			py_list.append(add)
-			self.ring_space -= (angle*self.radius)
-			self.element_display += "Multipole, length = " + str(length) + "field = " + str(t_p) + "\n"
-			self.element_label.config(text = self.element_display)
-			self.space_label.config(text = "Ring space: " + str(self.ring_space))
-			self.space_list.append(angle*self.radius)
-			
+		display_settings = {"fields":t_p, "length": length}
+		self.update_with_element(py_list, "Multipole", display_settings, length, add)
+
 		self.confirm.destroy()
 		self.add_button.grid(row = 5, column = 0)
     
@@ -779,7 +771,7 @@ class Gui():
 		settings and add, but these are later updated in OPAL code to include the time dependence objects (as defined objects can't 
 		be in shared memory). If the ring is being made, adds the cavity to the ring and subtracts length from ring space. The element 
 		and its settings are added to py_list.  If making a cell, the length is added to the cell size and the settings appended to the 
-		cell array. Either ring_display or cell_display updated with the magnet and its settings. Note that the bounds of length were 
+		cell array. Either element_display or cell_display updated with the magnet and its settings. Note that the bounds of length were 
 		defined by ring_space, so no need to check if ring is full.
 		
 		----arguments----
@@ -828,21 +820,9 @@ class Gui():
 
 		add = [{"element_type":pyopal.elements.variable_rf_cavity.VariableRFCavity}, settings]
 		
-		#check if making cell or ring
-		if self.making_cell == True:
-			self.cell_display += "RF, length = " + str(length) + " height = " + str(height) + " width = " + str(width) + "\n"
-			self.cell_label.config(text = self.cell_display)
-			self.cell.append(add)
-			self.cell_size += length
-			self.cell_length_list.append(length)
-		else:
-			py_list.append(add)
-			self.ring_space -= length
-			self.element_display += "RF, length = " + str(length) + " height = " + str(height) + " width = " + str(width) + "\n"
-			self.element_label.config(text = self.element_display)
-			self.space_label.config(text = "Ring space: " + str(self.ring_space))
-			self.space_list.append(length)
-			
+		display_settings = {"length":length, "width": width, "height":height}
+		self.update_with_element(py_list, "RF", display_settings, length, add)
+		
 		self.add_button.grid(row = 5, column = 0)
         
 	def delete_element(self, py_list):
@@ -859,7 +839,7 @@ class Gui():
 		
 		---variables/attributes defined inside---
 		string: list
-			list made from splitting cell_display or ring_display at new line characters. Indices removed from string, 
+			list made from splitting cell_display or element_display at new line characters. Indices removed from string, 
 			and the display reformed from the remaining elements.
 		display_add: str
 			each line of the display to be added to cell_display or element_display. Formed from iterating through string
@@ -1124,15 +1104,17 @@ class Gui():
 		self.root_2 = tk.Toplevel()
 		self.canvas_2 = tk.Canvas(self.root_2, width = 600, height = 600)
 		self.canvas_2.pack()
-		circle_radius = self.radius * 50
+		
+		scale_factor = 300 / (1.5*self.radius)
+		circle_radius = self.radius * scale_factor
 		self.circ_2 = Circle(self.canvas_2, circle_radius, self.root_2)
 		
 		for i in range(0, len(OPAL_list)):
 			name = OPAL_list[i][0]
-			start_x = (OPAL_list[i][1][0] * 50) + 300
-			start_y = (-(OPAL_list[i][1][1]) * 50) + 300
-			end_x = (OPAL_list[i][2][0] * 50) + 300
-			end_y = (-(OPAL_list[i][2][1]) * 50) + 300
+			start_x = (OPAL_list[i][1][0] * scale_factor) + 300
+			start_y = (-(OPAL_list[i][1][1]) * scale_factor) + 300
+			end_x = (OPAL_list[i][2][0] * scale_factor) + 300
+			end_y = (-(OPAL_list[i][2][1]) * scale_factor) + 300
 			
 			start_angle = find_angle(start_x, start_y, circle_radius)
 			end_angle = find_angle(end_x, end_y, circle_radius)

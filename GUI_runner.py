@@ -331,11 +331,12 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		mapper.r_points = [self.r0+i*0.001 for i in range(-1200, 1200+1, 2)]
 		mapper.phi_points = [i/8.0 for i in range(0, 180+1, 2)]
 		mapper.field_map_cylindrical()
+		
+		res = self.r0 / 90
+		mapper.x_points = [i*res for i in range(-100, 100+1, 1)]
+		mapper.y_points = [i*res for i in range(-100, 100+1, 1)]
 
-		mapper.x_points = [i*0.05 for i in range(-100, 100+1, 1)]
-		mapper.y_points = [i*0.05 for i in range(-100, 100+1, 1)]
-
-		mapper.field_map_cartesian()
+		mapper.field_map_cartesian(self.r0)
 		mapper.oned_field_map(self.r0)
 
 		n_elements = pyopal.objects.field.get_number_of_elements()

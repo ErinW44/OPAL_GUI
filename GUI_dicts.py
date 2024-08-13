@@ -26,84 +26,84 @@ BEAM_SETUP = [
   {
     "widget": tk.Label,
     "options": {
-      "text": "Initial x (0 and above [m])"
+      "text": "Initial x [m]"
     }
   },
   {
     "widget": tk.Entry,
     "options": {},
     "bounds": [
-      0.0,
+      -MAX_FLOAT,
       MAX_FLOAT
     ]
   },
   {
     "widget": tk.Label,
     "options": {
-      "text": "Initial px (0 and above [GeV/c])"
+      "text": "Initial px [GeV/c]"
     }
   },
   {
     "widget": tk.Entry,
     "options": {},
     "bounds": [
-      0.0,
+      -MAX_FLOAT,
       MAX_FLOAT
     ]
   },
   {
     "widget": tk.Label,
     "options": {
-      "text": "Initial y (0 and above [m])"
+      "text": "Initial y [m]"
     }
   },
   {
     "widget": tk.Entry,
     "options": {},
     "bounds": [
-      0.0,
+      -MAX_FLOAT,
       MAX_FLOAT
     ]
   },
   {
     "widget": tk.Label,
     "options": {
-      "text": "Initial py (0 and above [GeV/c])"
+      "text": "Initial py [GeV/c]"
     }
   },
   {
     "widget": tk.Entry,
     "options": {},
     "bounds": [
-      0,
+      -MAX_FLOAT,
       MAX_FLOAT
     ]
   },
   {
     "widget": tk.Label,
     "options": {
-      "text": "Initial z (0 and above [m])"
+      "text": "Initial z [m]"
     }
   },
   {
     "widget": tk.Entry,
     "options": {},
     "bounds": [
-      0.0,
+      -MAX_FLOAT,
       MAX_FLOAT
     ]
   },
   {
     "widget": tk.Label,
     "options": {
-      "text": "Initial pz (0 and above [GeV/c])"
+      "text": "Initial pz [GeV/c]"
     }
   },
   {
     "widget": tk.Entry,
     "options": {},
     "bounds": [
-      0,
+      -MAX_FLOAT,
       MAX_FLOAT
     ]
   }
@@ -198,10 +198,32 @@ def define_bounds_dict(radius, ring_space):
 		    MAX_FLOAT
 		  ]
 		],
+		"RF more": [
+		  [
+		   	MIN_FLOAT,
+		   	ring_space
+		  ],
+		  [
+		  	MIN_FLOAT,
+		  	5
+		  ],
+		  [
+		  	MIN_FLOAT,
+		  	5
+		  ]
+		 ], 
 		"Multipole": [
 		  [
 		    0,
 		    ring_space
+		  ],
+		  [
+		    0,
+		    radius
+		  ],
+		  [
+		    0,
+		    radius
 		  ],
 		  [
 		    0,
@@ -507,6 +529,28 @@ def make_all_options(max_length, max_angle, radius):
 				"widget":tk.Label, 
 				"options":{
 					"text":"length (0 to " + str(max_length) + " m)"
+					}
+			}, 
+			{
+				"widget":tk.Entry, 
+				"options":{
+					}
+			}, 
+			{
+				"widget":tk.Label, 
+				"options":{
+					"text":"horizontal aperture (0 to " + str(radius) + " m)"
+					}
+			}, 
+			{
+				"widget":tk.Entry, 
+				"options":{
+					}
+			}, 
+			{
+				"widget":tk.Label, 
+				"options":{
+					"text":"vertical aperture (0 to " + str(radius) + " m)"
 					}
 			}, 
 			{
