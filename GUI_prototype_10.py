@@ -75,22 +75,23 @@ class Gui():
 				gets the cartesian field map image from the correct file
 			cyl_photo: str
 				gets the cylindrical field map image from the correct file
+			invalid_label: tkinter Label
+				label showing the current error message (or lack thereof)
 		'''
 		if self.keep_window == False:
 			self.root = tk.Tk()	
 			self.end_button = tk.Button(self.root, text = "Finish Program", command = self.root.destroy)
-			self.end_button.grid()
+			self.end_button.grid(row = 0, column = 0)
 			self.invalid_label = tk.Label(self.root, text = "")
-			self.invalid_label.grid(row = 11, column = 0, sticky = "s")
 		
 		#Find image files	
 		self.cart_photo = tk.PhotoImage(file="scaling_ffa_map_cart.png")
 		self.cyl_photo = tk.PhotoImage(file="scaling_ffa_map_cyl.png")
 		
 		self.r_label = tk.Label(self.root, text = "Radius of ring (0 to 4 [m])")
-		self.r_label.grid()
+		self.r_label.grid(row = 1, column = 0)
 		self.r_entry = tk.Entry(self.root)
-		self.r_entry.grid()
+		self.r_entry.grid(row = 2, column = 0)
 		
 		self.input_list = []
 		self.ring_widget_list = []
@@ -101,7 +102,7 @@ class Gui():
 				widget_type = BEAM_SETUP[i]["widget"]
 				options = BEAM_SETUP[i]["options"]
 				widget = widget_type(self.root, **options)
-				widget.grid()
+				widget.grid(row = i + 3, column = 0)
 				self.ring_widget_list.append(widget)
 				if widget_type == tk.Scale or widget_type == tk.Entry:
 					self.input_list.append([widget, BEAM_SETUP[i]["bounds"]])
@@ -110,10 +111,11 @@ class Gui():
 			self.particle_choice = tk.StringVar(self.root)
 			self.particle_choice.set("proton")
 			self.particle_menu = tk.OptionMenu(self.root, self.particle_choice, "proton", "electron", "muon")
-			self.particle_menu.grid()
+			self.particle_menu.grid(row = 3 + len(BEAM_SETUP), column = 0)
 				
 		self.r_confirm = tk.Button(self.root, text = "Confirm settings", command = lambda: self.check_ring(OPAL_list, py_list, beam_list))
-		self.r_confirm.grid()
+		self.r_confirm.grid(row = 4 + len(BEAM_SETUP), column = 0)
+		self.invalid_label.grid(row = 5 + len(BEAM_SETUP), column = 0)
 		
 	def check_ring(self, OPAL_list, py_list, beam_list):
 		'''Checks selected ring/beam options are valid
@@ -134,6 +136,7 @@ class Gui():
 			ring_widget_list: list
 				array containing all widgets used in setting up the beam
 		'''
+		#validate radius input
 		invalid_flag = False
 		radius_check = self.r_entry.get()
 		valid, message = validate_input(radius_check, MIN_FLOAT, 4)
@@ -144,6 +147,7 @@ class Gui():
 			invalid_flag = True
 			display_message = message
 		
+		#validate beam settings if they were set/reset
 		if invalid_flag == False and self.ring_flag == False:
 			beam_settings = []
 			for i in range(0, len(self.input_list)):
@@ -156,7 +160,8 @@ class Gui():
 					display_message = message
 				else:
 					beam_settings.append(valid)
-						
+		
+		#destroy old widgets				
 		if self.ring_flag == False:				
 			for i in self.ring_widget_list:
 				i.destroy()
@@ -167,7 +172,8 @@ class Gui():
 		
 		if self.ring_flag == False:
 			self.particle_menu.destroy()
-				
+		
+		#restart initial menu if invalid	
 		if invalid_flag == True:
 			self.keep_window = True
 			self.make_interface(OPAL_list, py_list, beam_list)
@@ -197,7 +203,7 @@ class Gui():
 		beam_list
 		
 		---variables/attributes defined inside---
-			runner: 
+			runner: OPAL Runner object
 				object from class in GUI_runner.py. Inherits from minimal_runner also.
 			ring_space: float
 				attribute tracking the amount of space left in the ring [m]
@@ -551,6 +557,7 @@ class Gui():
 			lower_bound = bounds_list[i][0]
 			upper_bound = bounds_list[i][1]
 			valid, message = validate_input(setting, lower_bound, upper_bound)
+			
 			if valid == None:
 				invalid_input = True
 				display_message = message
@@ -558,10 +565,10 @@ class Gui():
 				self.chosen_settings.append(valid)
 				
 		if invalid_input == True:
-			self.invalid_label.config(text = "")
+			self.invalid_label.config(text = display_message)
 			self.options_window.rf_more_options()
 		else:
-			self.invalid_label.config(text = display_message)
+			self.invalid_label.config(text = "")
 			self.options_window.destroy()
 			self.add_rf(py_list)
 		
