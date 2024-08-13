@@ -95,7 +95,7 @@ class Options_Window(tk.Toplevel):
 		'''
 		for i in self.widget_list:
 			i.destroy()
-		order = int(chosen_settings[1])
+		order = int(chosen_settings[3])
 		self.slider_list = []
 		for i in range(0, order):
 			label = tk.Label(self, text = "order: " + str(i) + " (-2 to 2 T)")
