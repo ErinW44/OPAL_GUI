@@ -17,7 +17,6 @@ import numpy as np
 import opt_window
 import GUI_dicts
 
-#hello
 MAX_FLOAT = sys.float_info.max
 MIN_FLOAT = sys.float_info.min
 
@@ -98,14 +97,7 @@ class Gui():
 		
 		#Display widgets for creating beam if beam is being made/reset
 		if self.ring_flag == False:
-			for i in range(0, len(BEAM_SETUP)):
-				widget_type = BEAM_SETUP[i]["widget"]
-				options = BEAM_SETUP[i]["options"]
-				widget = widget_type(self.root, **options)
-				widget.grid(row = i + 3, column = 0)
-				self.ring_widget_list.append(widget)
-				if widget_type == tk.Scale or widget_type == tk.Entry:
-					self.input_list.append(widget)
+			self.ring_widget_list, self.input_list = display_widgets(self.root, BEAM_SETUP, self.ring_widget_list, self.input_list, 3, 0)
 			
 			#Sets up option menu for particle type
 			self.particle_choice = tk.StringVar(self.root)
@@ -155,8 +147,7 @@ class Gui():
 			
 		#destroy old widgets				
 		if self.ring_flag == False:				
-			for i in self.ring_widget_list:
-				i.destroy()
+			remove_widgets(self.ring_widget_list)
 				
 		self.r_confirm.destroy()
 		self.r_label.destroy()
@@ -272,7 +263,6 @@ class Gui():
 		
 		self.cell_label = tk.Label(self.root, text = "")
 		self.cell_label.grid(row = 3)
-		self.cell_display_dict = []
 		self.cell_display = ""
 		
 		self.cell_confirm = tk.Button(self.root, text = "confirm cell", command = lambda: self.confirm_cell(OPAL_list, py_list, beam_list))
@@ -311,7 +301,6 @@ class Gui():
 		
 		Moves from the cell building screen to the ring building screen, setting flags and destroying cell making
 		widgets.  
-		F
 		----arguments----
 		OPAL_list
 		py_list
@@ -416,7 +405,6 @@ class Gui():
 			self.full = False
 			
 		new_element = choice.get()
-		self.add_button.grid_forget()
 		
 		#defines bounds dictionary
 		self.BOUNDS_DICT = GUI_dicts.define_bounds_dict(self.radius, self.ring_space)
@@ -436,7 +424,7 @@ class Gui():
 				self.full_label = tk.Label(self.root, text = "Ring full. Add different element or execute")
 				self.full_label.grid(row = 8, column = 0)
 				self.full = True
-			self.add_button.grid(row = 5, column = 0)
+				
 			self.space_label.config(text = "Ring space: " + str(self.ring_space))
 		
 		#opens options window for other elements and adds confirm button to it
@@ -499,7 +487,6 @@ class Gui():
 		else:
 			self.options_window.destroy()
 			self.invalid_label.config(text = display_message)
-			self.add_button.grid(row = 5, column = 0)
 		
 	def get_orders(self, py_list):
 		'''Lets user choose the field strength of each pole in a multipole element
@@ -532,7 +519,6 @@ class Gui():
 		else:
 			self.options_window.destroy()
 			self.invalid_label.config(text = display_message)
-			self.add_button.grid(row = 5, column = 0)
 	
 	def get_rf_dimensions(self, py_list):
 		'''Lets user choose the dimensions of the RF cavity after time dependences have been set
@@ -646,8 +632,6 @@ class Gui():
 			self.full_label = tk.Label(self.root, text = "Ring full. Add different element or execute")
 			self.full_label.grid(row = 8, column = 0)
 			self.full = True
-			
-		self.add_button.grid(row = 5, column = 0)
 	 	
 	def add_drift(self, py_list):
 		'''Adds a drift space to the ring/cell
@@ -678,8 +662,6 @@ class Gui():
 		display_settings = {"angle": req_angle}
 		length = self.radius * req_angle
 		self.update_with_element(py_list, "Drift", display_settings, length, add)
-		
-		self.add_button.grid(row = 5, column = 0)
 		
 	def add_multipole(self, py_list):
 		'''Add a general multipole to ring/cell
@@ -725,7 +707,6 @@ class Gui():
 		self.update_with_element(py_list, "Multipole", display_settings, length, add)
 
 		self.confirm.destroy()
-		self.add_button.grid(row = 5, column = 0)
     
 	def add_rf(self, py_list):
 		'''Adds an RF cavity to ring/cell
@@ -785,8 +766,6 @@ class Gui():
 		
 		display_settings = {"length":length, "width": width, "height":height}
 		self.update_with_element(py_list, "RF", display_settings, length, add)
-		
-		self.add_button.grid(row = 5, column = 0)
         
 	def delete_element(self, py_list):
 		'''Delete last element in the cell/ring
@@ -957,18 +936,12 @@ class Gui():
 		
 		#deletes previous display if there is one
 		if self.fork_number >= 1 and not self.ring_flag:
-			for i in self.beam_display_list:
-				i.destroy()
+			remove_widgets(self.beam_display_list)
 		
 		#displays beam settings on screen
-		self.beam_display_list = []
-		for i in range(0, len(BEAM_DISPLAY)):
-			widget_type = BEAM_DISPLAY[i]["widget"]
-			options = BEAM_DISPLAY[i]["options"]
-			widget = widget_type(self.root, **options)
-			widget.grid(row = i+1, column = 2)
-			self.beam_display_list.append(widget)
-			
+
+		self.beam_display_list, input_list = display_widgets(self.root, BEAM_DISPLAY, [], [], 1, 2)
+		
 	def fork(self, OPAL_list, py_list, beam_list):
 		'''Runs OPAL as a child process and updates main window with plots 
 		
@@ -979,6 +952,10 @@ class Gui():
 		
 		child: Process object
 			multiprocessing process containing the runner's execute_fork method
+		
+		---variables/attributes defined inside---
+			root_2: RingDisplay object
+				defined with RingDisplay class
 		'''
 		#Create child process
 		child = mp.Process(target = self.runner.execute_fork, args = (OPAL_list, py_list, beam_list, )) #create child process
@@ -998,7 +975,7 @@ class Gui():
 		self.cart_photo = tk.PhotoImage(file="scaling_ffa_map_cart.png")
 		self.cyl_photo = tk.PhotoImage(file="scaling_ffa_map_cyl.png")
 		
-		self.draw_OPAL(OPAL_list)
+		self.root_2 = RingDisplay(self.radius, OPAL_list)
 		
 		#Make new widgets
 		self.reset_ring_button = tk.Button(self.root, text = "reset ring", command = lambda: self.reset_ring(OPAL_list, py_list, beam_list))
@@ -1012,24 +989,44 @@ class Gui():
 		self.cart_img.grid(row = 10, column = 0)
 		self.cyl_img = tk.Label(self.root, image = self.cyl_photo)
 		self.cyl_img.grid(row = 10, column = 2)
+
+class RingDisplay(tk.Toplevel):
+	'''Class creating a window that makes a visual representation of the OPAL ring
+	'''
+	def __init__(self, radius, OPAL_list):
+	'''Makes new window as a Toplevel object and sets attributes
 	
+	----arguments----
+		radius: float
+			radius of ring
+		OPAL_list
+	
+	---variables/attributes defined inside---
+		canvas_2: tkinter canvas object
+			canvas on which the ring is drawn
+	'''
+		super().__init__()
+		self.radius = radius
+		self.canvas_2 = tk.Canvas(self, width = 600, height = 600)
+		self.canvas_2.pack()
+		self.draw_OPAL(OPAL_list)
+
 	def draw_OPAL(self, OPAL_list):
-		'''Creates a new window which displays the ring and the position of all elements in it
+		'''Draws the ring and displays the position of all elements in it
 		
-		Creates a new window as a TopLevel over the main window. Creates a circle in the centre of the screen representing the ring using the 
-		Circle class. Iterates through OPAL_list in shared memory space (added to as OPAL runs) to access the start and end positions of each
-		element in the ring. Finds the angle around the ring of each element using the find_angle function, and plots each element as a square.
-		These are created using tkinter polygons, whose first and last vertices are the element's start and end points, and whose other vertices 
-		are calculated from width and angle. Colour of each element is determined the COLOURS dictionary. 
+		Creates a circle in the centre of the screen representing the ring using the Circle class. Iterates through 
+		OPAL_list in shared memory space to access the start and end positions of each element in the ring. Finds the 
+		angle around the ring of each element using the find_angle function, and plots each element as a square.
+		These are created using tkinter polygons, whose first and last vertices are the element's start and end points,
+		and whose other vertices are calculated from width and angle. Colour of each element is determined the COLOURS
+		dictionary. 
 		
 		----arguments----
 		OPAL_list
 		
 		---variables/attributes defined inside---
-		root_2: TopLevel object
-			window on top of the main one. Focus is not shifted from main window 
-		canvas_2: tkinter Canvas object
-			canvas on which the ring and elements are drawn
+		scale_factor: float
+			factor by which the OPAL positions [m] are scaled for the drawing. Calculated from the ring size
 		circ_2: Circle object
 			circle object which draws a circle on the canvas of the chosen radius
 		name: str
@@ -1057,13 +1054,9 @@ class Gui():
 		element: tkinter polygon
 			polygon drawn on canvas
 		'''
-		self.root_2 = tk.Toplevel()
-		self.canvas_2 = tk.Canvas(self.root_2, width = 600, height = 600)
-		self.canvas_2.pack()
-		
 		scale_factor = 300 / (1.5*self.radius)
 		circle_radius = self.radius * scale_factor
-		self.circ_2 = Circle(self.canvas_2, circle_radius, self.root_2)
+		self.circ_2 = Circle(self.canvas_2, circle_radius, self)
 		
 		for i in range(0, len(OPAL_list)):
 			name = OPAL_list[i][0]
@@ -1072,8 +1065,8 @@ class Gui():
 			end_x = (OPAL_list[i][2][0] * scale_factor) + 300
 			end_y = (-(OPAL_list[i][2][1]) * scale_factor) + 300
 			
-			start_angle = find_angle(start_x, start_y, circle_radius)
-			end_angle = find_angle(end_x, end_y, circle_radius)
+			start_angle = self.find_angle(start_x, start_y)
+			end_angle = self.find_angle(end_x, end_y)
 			angle_diff = np.abs(start_angle - end_angle)
 			width = circle_radius * np.sqrt(2*(1 - np.cos(angle_diff)))
 			
@@ -1085,7 +1078,33 @@ class Gui():
 			colour = COLOURS[name]
 			points = [start_x, start_y, x_1, y_1, x_2, y_2, end_x, end_y]
 			element = self.canvas_2.create_polygon(points, fill = colour)
-				
+			
+	def find_angle(self, x, y):
+		'''Find angle around the ring of a given point 
+		
+		Takes the coordinates of a point and the radius of the ring and returns the angle around the ring
+		the point is at. Calculates using the cosine rule. 
+		
+		----arguments----
+		x: float
+			x_coordinate of point
+		y: float
+			y_coordinate of point
+		
+		----returns----
+		angle: float
+			angle around the ring the point is at [rad]
+		'''
+		delta_x = x - (300 + self.radius)
+		delta_y = y - 300
+		length_a = np.sqrt(delta_x ** 2 + delta_y ** 2)
+		length_b = np.sqrt((delta_x + self.radius)**2 + delta_y **2)
+		cos_angle = (self.radius**2 + length_b **2 - length_a **2)/(2*self.radius*length_b)
+		angle = np.arccos(cos_angle)
+		if delta_y < 0:
+			angle = (2*np.pi) - angle
+		return angle
+			
 class Circle:
 	'''Class containing the circle representing the ring
 	'''
@@ -1110,34 +1129,6 @@ class Circle:
 		self.centre_x = 300
 		self.centre_y = 300
 		self.circ = self.canvas.create_oval(self.centre_x - radius, self.centre_y - radius, self.centre_x + radius, self.centre_y + radius)
-
-def find_angle(x, y, radius):
-	'''Find angle around the ring of a given point 
-	
-	Takes the coordinates of a point and the radius of the ring and returns the angle around the ring
-	the point is at. Calculates using the cosine rule. 
-	
-	----arguments----
-	x: float
-		x_coordinate of point
-	y: float
-		y_coordinate of point
-	radius: float
-		radius of ring
-	
-	----returns----
-	angle: float
-		angle around the ring the point is at [rad]
-	'''
-	delta_x = x - (300 + radius)
-	delta_y = y - 300
-	length_a = np.sqrt(delta_x ** 2 + delta_y ** 2)
-	length_b = np.sqrt((delta_x + radius)**2 + delta_y **2)
-	cos_angle = (radius**2 + length_b **2 - length_a **2)/(2*radius*length_b)
-	angle = np.arccos(cos_angle)
-	if delta_y < 0:
-		angle = (2*np.pi) - angle
-	return angle
 
 def validate_input(user_input, lower_bound, upper_bound):
 	'''Validates the user input according to bounds
@@ -1206,7 +1197,51 @@ def validation_loop(input_list, bounds_list, settings_list):
 				settings_list.append(valid)
 			
 	return settings_list, invalid_flag, display_message
+
+def display_widgets(root, widget_dict, widget_list, input_list, offset, col):
+	'''Displays a list of widgets on screen
 	
+	Iterates through a list of widget dictionaries, instantiating an object of each widget given and 
+	setting its args to those stored. Creates a list of all widgets, and a list of input widgets only.
+	
+	----arguments----
+	root: tk Root object
+		the window the widgets are displayed in
+	widget_list: list
+		list of widgets to be appended to 
+	input_list: list
+		list of input widgets to be appended to
+	offset: int
+		offset from row 0 used by the grid method in the loop
+	col: int
+		column
+	
+	----returns----
+	widget_list:
+		widget_list with all elements added
+	input_list:
+			input_list with all elements added	
+	'''
+	for i in range(0, len(widget_dict)):
+		widget_type = widget_dict[i]["widget"]
+		options = widget_dict[i]["options"]
+		widget = widget_type(root, **options)
+		widget.grid(row = i + offset, column = col)
+		widget_list.append(widget)
+		if widget_type == tk.Scale or widget_type == tk.Entry:
+			input_list.append(widget)
+	return widget_list, input_list
+
+def remove_widgets(widget_list):
+	'''Deletes all widgets in a given list
+	
+	----arguments----
+	widget_list: list
+		list of widgets to be deleted
+	'''
+	for i in widget_list:
+		i.destroy()
+
 def main():
 	"""Defines the manager and lists in shared memory, then runs main code sequence
 	
