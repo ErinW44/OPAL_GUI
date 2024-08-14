@@ -652,6 +652,9 @@ class Gui():
 		f_start = self.chosen_settings[2]
 		f_end_length = self.chosen_settings[3]
 		f_centre_length = self.chosen_settings[4]
+		radial_neg_extent = self.chosen_settings[5]
+		radial_pos_extent = self.chosen_settings[6]
+		
 		f_end = f_start + f_centre_length + f_end_length * 4
 		temp_space = self.ring_space
 		temp_space -= f_end
@@ -665,8 +668,8 @@ class Gui():
 				"r0":self.radius, 
 				"field_index":k_value, 
 				"tan_delta":math.tan(self.runner.spiral_angle), 
-				"radial_neg_extent":self.runner.dr/2, 
-				"radial_pos_extent":self.runner.dr/2, 
+				"radial_neg_extent":radial_neg_extent, 
+				"radial_pos_extent":radial_pos_extent,
 				"azimuthal_extent":self.runner.cell_length, 
 				"magnet_start":f_start, "end_length":f_end_length, 
 				"centre_length":f_centre_length, 

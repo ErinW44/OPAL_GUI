@@ -152,6 +152,14 @@ def define_bounds_dict(radius, ring_space):
 		  [
 		    MIN_FLOAT,
 		    radius/4
+		  ],
+		  [
+		    MIN_FLOAT,
+		    radius
+		  ],
+		  [
+		    MIN_FLOAT,
+		    radius
 		  ]
 		],
 		"Drift": [
@@ -205,11 +213,11 @@ def define_bounds_dict(radius, ring_space):
 		  ],
 		  [
 		  	MIN_FLOAT,
-		  	5
+		  	radius
 		  ],
 		  [
 		  	MIN_FLOAT,
-		  	5
+		  	radius
 		  ]
 		 ], 
 		"Multipole": [
@@ -343,6 +351,28 @@ def make_all_options(max_length, max_angle, radius):
 				"widget":tk.Label, 
 				"options": {
 					"text":"end length (0 to " + str(radius/4) + " m)"
+					}
+			}, 
+			{
+				"widget":tk.Entry, 
+				"options":{
+					}
+			},
+			{
+				"widget":tk.Label, 
+				"options": {
+					"text":"radial positive extent (0 to " + str(radius) + " [m])"
+					}
+			}, 
+			{
+				"widget":tk.Entry, 
+				"options":{
+					}
+			},
+			{
+				"widget":tk.Label, 
+				"options": {
+					"text":"radial negative extent (0 to " + str(radius) + " [m])"
 					}
 			}, 
 			{
@@ -504,7 +534,7 @@ def make_all_options(max_length, max_angle, radius):
 			{
 				"widget":tk.Label, 
 				"options":{
-					"text":"width (0 to 5 m)"
+					"text":"width (0 to " + str(radius) + " m)"
 					}
 			}, 
 			{
@@ -515,7 +545,7 @@ def make_all_options(max_length, max_angle, radius):
 			{
 				"widget":tk.Label, 
 				"options":{
-					"text":"height (0 to 5 m)"
+					"text":"height (0 to " + str(radius) + " m)"
 					}
 			}, 
 			{
