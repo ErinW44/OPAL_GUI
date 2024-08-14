@@ -21,7 +21,7 @@ MAX_FLOAT = sys.float_info.max
 MIN_FLOAT = sys.float_info.min
 
 #dictionary for colour of each element
-COLOURS = GUI_dicts.COLOURS
+COLOURS_KEY = GUI_dicts.COLOURS_KEY
 
 #dictionary for widgets used to set up beam, their arguments, and bounds for validation of entries
 BEAM_SETUP = GUI_dicts.BEAM_SETUP
@@ -994,17 +994,17 @@ class RingDisplay(tk.Toplevel):
 	'''Class creating a window that makes a visual representation of the OPAL ring
 	'''
 	def __init__(self, radius, OPAL_list):
-	'''Makes new window as a Toplevel object and sets attributes
-	
-	----arguments----
-		radius: float
-			radius of ring
-		OPAL_list
-	
-	---variables/attributes defined inside---
-		canvas_2: tkinter canvas object
-			canvas on which the ring is drawn
-	'''
+		'''Makes new window as a Toplevel object and sets attributes
+		
+		----arguments----
+			radius: float
+				radius of ring
+			OPAL_list
+		
+		---variables/attributes defined inside---
+			canvas_2: tkinter canvas object
+				canvas on which the ring is drawn
+		'''
 		super().__init__()
 		self.radius = radius
 		self.canvas_2 = tk.Canvas(self, width = 600, height = 600)
@@ -1018,7 +1018,7 @@ class RingDisplay(tk.Toplevel):
 		OPAL_list in shared memory space to access the start and end positions of each element in the ring. Finds the 
 		angle around the ring of each element using the find_angle function, and plots each element as a square.
 		These are created using tkinter polygons, whose first and last vertices are the element's start and end points,
-		and whose other vertices are calculated from width and angle. Colour of each element is determined the COLOURS
+		and whose other vertices are calculated from width and angle. Colour of each element is determined the COLOURS_KEY
 		dictionary. 
 		
 		----arguments----
@@ -1048,7 +1048,7 @@ class RingDisplay(tk.Toplevel):
 		x_2, y_2: floats
 			coordinates of third polygon point (above end point)
 		colour: str
-			colour of the element from COLOURS dictionary
+			colour of the element from COLOURS_KEY dictionary
 		points: list
 			contains the coordinates of each polygon vertex
 		element: tkinter polygon
@@ -1075,9 +1075,11 @@ class RingDisplay(tk.Toplevel):
 			x_2 = end_x + width * np.cos(start_angle)
 			y_2 = end_y + width * np.sin(start_angle)
 			
-			colour = COLOURS[name]
+			colour = COLOURS_KEY[name][0]
 			points = [start_x, start_y, x_1, y_1, x_2, y_2, end_x, end_y]
 			element = self.canvas_2.create_polygon(points, fill = colour)
+		
+		self.make_key()
 			
 	def find_angle(self, x, y):
 		'''Find angle around the ring of a given point 
@@ -1104,7 +1106,15 @@ class RingDisplay(tk.Toplevel):
 		if delta_y < 0:
 			angle = (2*np.pi) - angle
 		return angle
-			
+	
+	def make_key(self):
+		self.key_label = tk.Label(self, text = "")
+		self.key_text = "---key---\n"
+		self.key_label.pack()
+		for key in COLOURS_KEY:
+			self.key_text += COLOURS_KEY[key][1] + ": " + COLOURS_KEY[key][0] + "\n"
+		self.key_label.configure(text = self.key_text)
+		
 class Circle:
 	'''Class containing the circle representing the ring
 	'''

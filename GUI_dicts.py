@@ -81,12 +81,27 @@ BEAM_SETUP = [
   }
 ]
 
-COLOURS ={
-    "ScalingFFAMagnet": "red",
-    "DefaultDrift": "blue",
-    "LOCAL_CARTESIAN_OFFSET": "blue",
-    "MULTIPOLET": "green",
-    "VARIABLE_RF_CAVITY": "yellow"
+COLOURS_KEY ={
+    "ScalingFFAMagnet": [
+    						"red", 
+    						"Scaling FFA magnet"
+    					],
+    "DefaultDrift": [
+    						"blue", 
+    						"Default drift"
+    					],
+    "LOCAL_CARTESIAN_OFFSET": [
+    						"blue", 
+    						"drift"
+    					],
+    "MULTIPOLET": [
+    						"green", 
+    						"multipole"
+    					],
+    "VARIABLE_RF_CAVITY": [
+    						"yellow", 
+    						"RF cavity"
+    					]
   }
   
 def define_bounds_dict(radius, ring_space):
