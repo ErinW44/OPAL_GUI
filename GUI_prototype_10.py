@@ -105,7 +105,7 @@ class Gui():
 				widget.grid(row = i + 3, column = 0)
 				self.ring_widget_list.append(widget)
 				if widget_type == tk.Scale or widget_type == tk.Entry:
-					self.input_list.append([widget, BEAM_SETUP[i]["bounds"]])
+					self.input_list.append(widget)
 			
 			#Sets up option menu for particle type
 			self.particle_choice = tk.StringVar(self.root)
@@ -150,17 +150,9 @@ class Gui():
 		#validate beam settings if they were set/reset
 		if invalid_flag == False and self.ring_flag == False:
 			beam_settings = []
-			for i in range(0, len(self.input_list)):
-				setting = self.input_list[i][0].get()
-				bounds = self.input_list[i][1]
-				valid, message = validate_input(setting, bounds[0], bounds[1])
-
-				if valid == None:
-					invalid_flag = True
-					display_message = message
-				else:
-					beam_settings.append(valid)
-		
+			self.BOUNDS_DICT = GUI_dicts.define_bounds_dict(self.radius, 0)
+			beam_settings, invalid_flag, display_message = validation_loop(self.input_list, self.BOUNDS_DICT["beam"], beam_settings)
+			
 		#destroy old widgets				
 		if self.ring_flag == False:				
 			for i in self.ring_widget_list:
@@ -470,7 +462,7 @@ class Gui():
 		py_list
 		
 		---variables/attributes defined inside---
-		invalid_input: Bool
+		invalid_flag: Bool
 			flag that says whether and invalid input has been encountered. Set to True if validation fails for any setting
 		chosen_settings: list
 			list containing the validated settings chosen for the element by the use
@@ -488,20 +480,9 @@ class Gui():
 			value returned by validation function called on setting. None if invalid, and validated setting if valid
 		'''
 		self.chosen_settings = []
-		invalid_input = False
-		for i in range(0, len(scale_list)):
-			setting = scale_list[i].get()
-			bounds_list = self.BOUNDS_DICT[new_element]
-			lower_bound = bounds_list[i][0]
-			upper_bound = bounds_list[i][1]
-			valid, message = validate_input(setting, lower_bound, upper_bound)
-			if valid == None:
-				invalid_input = True
-				display_message = message
-			else:
-				self.chosen_settings.append(valid)
-				
-		if invalid_input == False:
+		self.chosen_settings, invalid_flag, display_message = validation_loop(scale_list, self.BOUNDS_DICT[new_element], self.chosen_settings)
+		
+		if invalid_flag == False:
 			self.invalid_label.config(text = "")
 			if new_element == "Scaling FFA magnet":
 				self.options_window.destroy()
@@ -541,17 +522,9 @@ class Gui():
 			as in get_choices
 		'''
 		t_p = []
-		invalid_input = False
-		for i in range(0, len(self.options_window.slider_list)):
-			field = self.options_window.slider_list[i][1].get()
-			valid, message = validate_input(field, -2, 2)
-			if valid != None:
-				t_p.append(valid)
-			else:
-				display_message = message
-				invalid_input = True
+		t_p, invalid_flag, display_message = validation_loop(self.options_window.scale_list, self.BOUNDS_DICT["Multipole more"], t_p)
 		
-		if invalid_input == False:
+		if invalid_flag == False:
 			self.chosen_settings.append(t_p)
 			self.options_window.destroy()
 			self.invalid_label.config(text = "")
@@ -572,22 +545,10 @@ class Gui():
 		----arguments----
 		py_list
 		'''
-		invalid_input = False
-		scale_list = self.options_window.scale_list
-		bounds_list = self.BOUNDS_DICT["RF more"]
-		for i in range(0, len(scale_list)):
-			setting = scale_list[i].get()
-			lower_bound = bounds_list[i][0]
-			upper_bound = bounds_list[i][1]
-			valid, message = validate_input(setting, lower_bound, upper_bound)
-			
-			if valid == None:
-				invalid_input = True
-				display_message = message
-			else:
-				self.chosen_settings.append(valid)
-				
-		if invalid_input == True:
+		
+		self.chosen_settings, invalid_flag, display_message = validation_loop(self.options_window.scale_list, self.BOUNDS_DICT["RF more"], self.chosen_settings)
+		
+		if invalid_flag == True:
 			self.invalid_label.config(text = display_message)
 			self.options_window.destroy()
 		else:
@@ -661,7 +622,6 @@ class Gui():
 		
 		#check if ring full
 		if temp_space >= 0:
-			
 			#define settings and list appended to py_list or cell
 			settings = {
 				"b0":b0, 
@@ -935,15 +895,8 @@ class Gui():
 		
 		#validates other inputs
 		beam_settings = []
-		invalid_flag = False
-		for i in range(0, len(self.options_window.input_list)):
-			setting = self.options_window.input_list[i][0].get()
-			bounds = self.options_window.input_list[i][1]
-			valid, message = validate_input(setting, bounds[0], bounds[1])
-			if valid == None:
-				invalid_flag = True
-			else:
-				beam_settings.append(valid)
+		bounds_list = self.BOUNDS_DICT["beam"]
+		beam_settings, invalid_flag, display_message = validation_loop(self.options_window.input_list, bounds_list, beam_settings)
 		
 		#destroys window and checks if any invalid inputs were found		
 		self.options_window.destroy()
@@ -1215,6 +1168,44 @@ def validate_input(user_input, lower_bound, upper_bound):
 	else:
 		print("not in bounds")
 		return None, "not in bounds"
+
+def validation_loop(input_list, bounds_list, settings_list):
+	'''Validates a set of inputs according to their bounds
+	
+	Iterates through a given list of input widgets and gets the value enterred. Iterates through all inputs and validates them, 
+	setting invalid_flag and an error message accordingly. Bounds specified in arguments. Valid inputs appended to a chosen list.
+	
+	----arguments----
+		input_list: list
+			list of tkinter input widgets
+		bounds_list: list
+			list containing the bounds for each input. Structure is [[lower_bound, upper_bound]]
+		settings_list: list
+			list to which valid inputs are appended
+	
+	----returns----
+		settings_list: list
+			settings_list after inputes appended
+		invalid_flag: Bool
+			True if any invalid inputs were encountered, False otherwise
+		display_message: str
+			error message to be displayed. "" if no invalid inputs
+	'''
+	invalid_flag = False
+	display_message = ""
+	for i in range(0, len(input_list)):
+			setting = input_list[i].get()
+			lower_bound = bounds_list[i][0]
+			upper_bound = bounds_list[i][1]
+			valid, message = validate_input(setting, lower_bound, upper_bound)
+			
+			if valid == None:
+				invalid_flag = True
+				display_message = message
+			else:
+				settings_list.append(valid)
+			
+	return settings_list, invalid_flag, display_message
 	
 def main():
 	"""Defines the manager and lists in shared memory, then runs main code sequence

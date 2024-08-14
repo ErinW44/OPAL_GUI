@@ -17,11 +17,7 @@ BEAM_SETUP = [
   },
   {
     "widget": tk.Entry,
-    "options": {},
-    "bounds": [
-      1.00000001,
-      MAX_FLOAT
-    ]
+    "options": {}
   },
   {
     "widget": tk.Label,
@@ -31,11 +27,7 @@ BEAM_SETUP = [
   },
   {
     "widget": tk.Entry,
-    "options": {},
-    "bounds": [
-      -MAX_FLOAT,
-      MAX_FLOAT
-    ]
+    "options": {}
   },
   {
     "widget": tk.Label,
@@ -45,11 +37,7 @@ BEAM_SETUP = [
   },
   {
     "widget": tk.Entry,
-    "options": {},
-    "bounds": [
-      -MAX_FLOAT,
-      MAX_FLOAT
-    ]
+    "options": {}
   },
   {
     "widget": tk.Label,
@@ -59,11 +47,7 @@ BEAM_SETUP = [
   },
   {
     "widget": tk.Entry,
-    "options": {},
-    "bounds": [
-      -MAX_FLOAT,
-      MAX_FLOAT
-    ]
+    "options": {}
   },
   {
     "widget": tk.Label,
@@ -73,11 +57,7 @@ BEAM_SETUP = [
   },
   {
     "widget": tk.Entry,
-    "options": {},
-    "bounds": [
-      -MAX_FLOAT,
-      MAX_FLOAT
-    ]
+    "options": {}
   },
   {
     "widget": tk.Label,
@@ -87,11 +67,7 @@ BEAM_SETUP = [
   },
   {
     "widget": tk.Entry,
-    "options": {},
-    "bounds": [
-      -MAX_FLOAT,
-      MAX_FLOAT
-    ]
+    "options": {}
   },
   {
     "widget": tk.Label,
@@ -102,10 +78,6 @@ BEAM_SETUP = [
   {
     "widget": tk.Entry,
     "options": {},
-    "bounds": [
-      -MAX_FLOAT,
-      MAX_FLOAT
-    ]
   }
 ]
 
@@ -128,10 +100,33 @@ def define_bounds_dict(radius, ring_space):
 	
 	----returns----
 	bounds_dict: dict
-		dictionary containing bounds for each setting of every element. Structure is 
-		{"element name": [[lower, upper], ...], ....}
+		dictionary containing bounds for each setting of every element (and the beam). Structure
+		is {"element name": [[lower, upper], ...], ....}
 	'''
 	bounds_dict = {
+		"beam": [
+		  [1.00000001,
+      	   MAX_FLOAT
+      	  ],
+      	  [-MAX_FLOAT,
+      	   MAX_FLOAT
+      	  ],
+      	  [-MAX_FLOAT,
+      	   MAX_FLOAT
+      	  ],
+      	  [-MAX_FLOAT,
+      	   MAX_FLOAT
+      	  ],
+      	  [-MAX_FLOAT,
+      	   MAX_FLOAT
+      	  ],
+      	  [-MAX_FLOAT,
+      	   MAX_FLOAT
+      	  ],
+      	  [-MAX_FLOAT,
+      	   MAX_FLOAT
+      	  ]
+      	],
 		"Scaling FFA magnet": [
 		  [
 		    -2,
@@ -236,6 +231,28 @@ def define_bounds_dict(radius, ring_space):
 		  [
 		    0,
 		    5
+		  ]
+		],
+	   "Multipole more": [
+		  [
+		    -2,
+		    2
+		  ],
+		  [
+		    -2,
+		    2
+		  ],
+		  [
+		    -2,
+		    2
+		  ],
+		  [
+		    -2,
+		    2
+		  ],
+		  [
+		    -2,
+		    2
 		  ]
 		]
 	  }

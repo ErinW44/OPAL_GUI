@@ -96,12 +96,12 @@ class Options_Window(tk.Toplevel):
 		for i in self.widget_list:
 			i.destroy()
 		order = int(chosen_settings[3])
-		self.slider_list = []
+		self.scale_list = []
 		for i in range(0, order):
 			label = tk.Label(self, text = "order: " + str(i) + " (-2 to 2 T)")
-			self.slider_list.append([label, tk.Entry(self)])
-			self.slider_list[i][0].pack()
-			self.slider_list[i][1].pack()
+			self.scale_list.append(tk.Entry(self))
+			label.pack()
+			self.scale_list[i].pack()
 	
 	def rf_more_options(self):
 		'''Lets user choose dimensions of RF cavity after choosing the time dependence parameters
@@ -139,7 +139,7 @@ class Options_Window(tk.Toplevel):
 			widget.grid()
 			self.beam_widget_list.append(widget)
 			if widget_type == tk.Scale or widget_type == tk.Entry:
-				self.input_list.append([widget, BEAM_SETUP[i]["bounds"]])
+				self.input_list.append(widget)
 			
 		self.particle_choice = particle_choice
 		self.particle_menu = tk.OptionMenu(self, self.particle_choice, "proton", "electron", "muon")
