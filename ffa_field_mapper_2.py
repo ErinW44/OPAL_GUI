@@ -199,9 +199,9 @@ class FFAFieldMapper():
 		"""Plot a field map in cartesian coordinates with beam trajectory
 
 		----arguments----
-		axes: matplotlib Axes object or None 
-			If defined, plot the field map on axes as a hist2d; if None make a new 
-			figure/axes and plot it there.
+			axes: matplotlib Axes object or None 
+				If defined, plot the field map on axes as a hist2d; if None make a new 
+				figure/axes and plot it there.
 
 		----returns----
 		either a new figure or the parent figure to which axes belongs.
@@ -247,10 +247,12 @@ class FFAFieldMapper():
 	def plot_tracks_cylindrical(self, axes):
 		"""
 		Plot tracks in cylindrical coordinates
-		- axes: Axes object to draw on
 		If phi changes by more than 180 degrees in a single step, the track is
 		assumed to have gone through an entire turn (360 <-> 0) and a new plot
 		is started
+		
+		----arguments----
+			axes: Axes object to draw on
 		"""
 		for pid, track in self.track_orbit_dict.items():
 			# find the list of indices where the track loops
@@ -317,8 +319,12 @@ class FFAFieldMapper():
 	def get_derivative(self, var1, var2, pos_x, pos_y, pos_z, time):
 		"""
 		Calculate a numerical derivative of the field in cartesian coordinates
-		- var1: variable in the numerator, should be one of self.position_variables
-		- var2: variable in the denominator (range 1 to 4)
+		
+		----arguments----
+			var1: 
+				variable in the numerator, should be one of self.position_variables
+			var2: 
+				variable in the denominator (range 1 to 4)
 		"""
 		pos_vec = [pos_x, pos_y, pos_z, time]
 		var2 = self.position_variables.index(var2)

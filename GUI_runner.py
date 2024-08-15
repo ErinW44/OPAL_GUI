@@ -24,6 +24,8 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		'''
 		super().__init__()
 		self.verbose = 1
+		self.max_steps = 1000
+		self.set_number_of_steps(1)
 	
 	def make_beam(self, beam_list):
 		"""Make a beam object
@@ -54,8 +56,9 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		beam = pyopal.objects.beam.Beam()
 		beam.set_opal_name("DefaultBeam")
 		beam.particle = beam_list[0].upper()
-		beam.momentum = self.momentum
+		#beam.momentum = self.momentum
 		beam.gamma = beam_list[1]
+		print(beam.gamma, beam.momentum, beam.energy)
 		beam.beam_frequency = 1e-6/self.time_per_turn # MHz
 		beam.number_of_slices = 10
 		beam.number_of_particles = int(self.distribution_str.split()[0])
@@ -138,8 +141,6 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 			self.make_beam(beam_list)
 			self.make_ring()
 			self.make_line(py_list)
-			
-			#maybe add code here to give OPAL_list to GUI and draw the elements, then click to proceed with making plots?
 			
 			self.make_track()
 			self.make_track_run()
@@ -304,6 +305,8 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		---variables/attributes defined inside---
 		mapper: object
 			instance of FFAFieldMapper class from object from ffa_field_mapper_2.py
+		res: float
+			controls the number of and range of points plotted in the cartesian field map
 		"""
 		
 		mapper = ffa_field_mapper_2.FFAFieldMapper()
