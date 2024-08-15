@@ -2,6 +2,7 @@
 #import modules
 import tkinter as tk
 import sys
+import numpy as np
 import GUI_dicts
 
 #define constants
@@ -21,7 +22,7 @@ class Options_Window(tk.Toplevel):
 		self.focus()
 		self.grab_set()
 		
-	def display_options(self, choice, ring_space, radius):
+	def display_options(self, choice, radius):
 		'''Displays the widgets for choosing the settings of whichever element has been selected
 		
 		For the element chosen in the GUI code, the correct widgets are selected from the ALL_OPTIONS dictionary which 
@@ -31,14 +32,10 @@ class Options_Window(tk.Toplevel):
 		----arguments----
 			choice: str
 				name of the element selected by user in GUI code
-			ring_space: float
-				space left in the ring. Used to calculate bounds on element settings
 			radius: float
 				radius of ring. Used to calculate bounds on element settings
 		
 		---variables/attributes defined inside---
-			max_length: float
-				maximum length a component can be. Used in ALL_OPTIONS
 			max_angle: float
 				maximum angle a component can occupy (from centre of ring). Used in ALL_OPTIONS
 			ALL_OPTIONS: dict
@@ -58,12 +55,10 @@ class Options_Window(tk.Toplevel):
 				instantiated tkinter widget
 		'''
 		self.choice = choice
-		self.ring_space = ring_space
 		self.radius = radius
-		max_length = round(self.ring_space, 2)
-		max_angle = round(self.ring_space / self.radius, 2)
+		max_angle = round(2 * np.pi, 2)
 		
-		ALL_OPTIONS = GUI_dicts.make_all_options(max_length, max_angle, self.radius)
+		ALL_OPTIONS = GUI_dicts.make_all_options(max_angle, self.radius)
 		self.options_dict = ALL_OPTIONS[choice]
 		
 		self.scale_list = []
@@ -112,7 +107,7 @@ class Options_Window(tk.Toplevel):
 		'''
 		for i in self.widget_list:
 			i.destroy()
-		self.display_options("RF more", self.ring_space, self.radius) 
+		self.display_options("RF more", self.radius) 
 		
 	def beam_options(self, particle_choice):
 		'''Lets user choose beam/distribution settings

@@ -150,7 +150,7 @@ class Gui():
 		#validate beam settings if they were set/reset
 		if invalid_flag == False and self.ring_flag == False:
 			beam_settings = []
-			self.BOUNDS_DICT = GUI_dicts.define_bounds_dict(self.radius, 0)
+			self.BOUNDS_DICT = GUI_dicts.define_bounds_dict(self.radius)
 			beam_settings, invalid_flag, display_message = validation_loop(self.input_list, self.BOUNDS_DICT["beam"], beam_settings)
 			
 		#destroy old widgets				
@@ -199,8 +199,6 @@ class Gui():
 				object from class in GUI_runner.py. Inherits from minimal_runner also.
 			ring_space: float
 				attribute tracking the amount of space left in the ring [m]
-			full: Bool
-				flag that says if ring is full or not
 			made_cell: Bool
 				flag that says whether a cell element has already been made or not
 			making_cell:  Bool
@@ -218,7 +216,6 @@ class Gui():
 		
 		#set flags and attributes for ring/cell
 		self.ring_space = self.radius * 2 * np.pi
-		self.full = False
 		self.made_cell = False
 		self.making_cell = False
 		
@@ -368,13 +365,16 @@ class Gui():
 		self.space_label = tk.Label(self.root, text = "Ring space: ")
 		self.space_label.grid(row = 7, column = 0)
 		
+		#set up full_label with no text (updates with text if full)
+		self.full_label = tk.Label(self.root, text = "")
+		self.full_label.grid(row = 8, column = 0)
+		
 	def add_element(self, choice, py_list):
 		'''Adds new element based on what the user selected and lets them choose its parameters
 		
-		Defines a dictionary of the bounds for each parameter of each possible element. If the ring is not full, the settings
-		screen for the new element is displayed by defining the options_window object from the class in opt_window.py. If the 
-		ring is full, the user is told to choose a different element or run OPAL. Cell element handled seperately as no 
-		settings need to be chosen.
+		Defines a dictionary of the bounds for each parameter of each possible element. The settings screen for the new element 
+		is displayed by defining the options_window object from the class in opt_window.py. Cell element handled seperately as no
+		settings need to be chosen. If the ring is full, a warning message is displayed.
 		
 		----arguments----
 			choice: tkinter StringVar object
@@ -398,38 +398,28 @@ class Gui():
 		settings = ["argument":value, ...]
 		add = [{"element_type": pyOpal object, "length":length}, settings]
 		'''
-		#checks if ring is full
-		if self.full:
-			self.full_label.destroy()
-			self.full = False
-			
 		new_element = choice.get()
 		
 		#defines bounds dictionary
-		self.BOUNDS_DICT = GUI_dicts.define_bounds_dict(self.radius, self.ring_space)
+		self.BOUNDS_DICT = GUI_dicts.define_bounds_dict(self.radius)
 		
 		#seperate handling for cell element
 		if new_element == "Cell":
-			temp_space = self.ring_space
-			temp_space -= self.cell_size
-			if temp_space >= 0:
-				self.element_display += "Cell \n"
-				self.element_label.config(text = self.element_display)
-				self.ring_space = temp_space
-				self.space_list.append(self.cell_size)
-				for i in range(0, len(self.cell)):
-					py_list.append(self.cell[i])
-			else:
-				self.full_label = tk.Label(self.root, text = "Ring full. Add different element or execute")
-				self.full_label.grid(row = 8, column = 0)
-				self.full = True
+			self.ring_space = self.ring_space
+			self.ring_space -= self.cell_size
+			self.element_display += "Cell \n"
+			self.element_label.config(text = self.element_display)
+			self.space_list.append(self.cell_size)
+			for i in range(0, len(self.cell)):
+				py_list.append(self.cell[i])
 				
 			self.space_label.config(text = "Ring space: " + str(self.ring_space))
-		
+			self.check_full()
+			
 		#opens options window for other elements and adds confirm button to it
 		else:
 			self.options_window = opt_window.Options_Window()
-			self.options_window.display_options(new_element, self.ring_space, self.radius)
+			self.options_window.display_options(new_element, self.radius)
 			self.confirm = tk.Button(self.options_window, text = "confirm settings", command = lambda: self.get_choices(self.options_window.scale_list, new_element, py_list))
 			confirm_tip = Hovertip(self.confirm, "Confirm settings.")
 			self.confirm.pack()
@@ -474,6 +464,8 @@ class Gui():
 		else:
 			self.options_window.destroy()
 			self.invalid_label.config(text = display_message)
+			self.invalid_label.grid_forget()
+			self.invalid_label.grid(row = 9, column = 0)
 
 	def update_with_element(self, py_list, new_element, display_settings, length, add):
 		'''Updates displays and the relevant lists with element added
@@ -515,6 +507,7 @@ class Gui():
 			self.space_label.config(text = "Ring space: " + str(self.ring_space))
 			self.space_list.append(length)
 			py_list.append(add)
+			self.check_full()
 				
 	def get_orders(self, py_list):
 		'''Lets user choose the field strength of each pole in a multipole element
@@ -624,10 +617,8 @@ class Gui():
 				distance from start of magnet at which field rises to half the peak value [m]
 			f_centre_length: float
 				length of the plateau of field strength [m]
-			f_end: float
+			f_end_length: float
 				distance from end of plateau to start of next element (determines how fast field drops off) [m]
-			temp_space: float
-				temporary variable used to check if ring is full (if adding to ring and not cell)
 			display_settings: dict
 				contains the attribute names and values that are to be shown in element/cell display labels
 		'''
@@ -640,40 +631,32 @@ class Gui():
 		radial_neg_extent = self.chosen_settings[5]
 		radial_pos_extent = self.chosen_settings[6]
 		
-		f_end = f_start + f_centre_length + f_end_length * 4
-		temp_space = self.ring_space
-		temp_space -= f_end
+		f_end = f_centre_length + f_end_length * 4
+		self.ring_space -= f_end
+
+		settings = {
+			"b0":b0, 
+			"r0":self.radius, 
+			"field_index":k_value, 
+			"tan_delta":math.tan(self.runner.spiral_angle), 
+			"radial_neg_extent":radial_neg_extent, 
+			"radial_pos_extent":radial_pos_extent,
+			"azimuthal_extent":self.runner.cell_length, 
+			"magnet_start":f_start, "end_length":f_end_length, 
+			"centre_length":f_centre_length, 
+			"magnet_end":f_end
+			}
 		
-		if temp_space >= 0:
-			settings = {
-				"b0":b0, 
-				"r0":self.radius, 
-				"field_index":k_value, 
-				"tan_delta":math.tan(self.runner.spiral_angle), 
-				"radial_neg_extent":radial_neg_extent, 
-				"radial_pos_extent":radial_pos_extent,
-				"azimuthal_extent":self.runner.cell_length, 
-				"magnet_start":f_start, "end_length":f_end_length, 
-				"centre_length":f_centre_length, 
-				"magnet_end":f_end
-				}
-			
-			add = [{"element_type":pyopal.elements.scaling_ffa_magnet.ScalingFFAMagnet}, settings]
-			
-			display_settings = {
-							"b0": b0, 
-							"k":k_value, 
-							"start":f_start, 
-							"centre_length":f_centre_length, 
-							"end length":f_end_length
-							}
-			self.update_with_element(py_list, "Scaling FFA magnet", display_settings, f_end, add)
-			
-		#tell user ring is full
-		else:
-			self.full_label = tk.Label(self.root, text = "Ring full. Add different element or execute")
-			self.full_label.grid(row = 8, column = 0)
-			self.full = True
+		add = [{"element_type":pyopal.elements.scaling_ffa_magnet.ScalingFFAMagnet}, settings]
+		
+		display_settings = {
+						"b0": b0, 
+						"k":k_value, 
+						"start":f_start, 
+						"centre_length":f_centre_length, 
+						"end length":f_end_length
+						}
+		self.update_with_element(py_list, "Scaling FFA magnet", display_settings, f_end, add)
 	 	
 	def add_drift(self, py_list):
 		'''Adds a drift space to the ring/cell
@@ -808,7 +791,18 @@ class Gui():
 						"height":height
 						}
 		self.update_with_element(py_list, "RF", display_settings, length, add)
-        
+    
+	def check_full(self):
+		'''Checks if ring is full
+		
+		Checks if ring_space is less than 0. If it is, full_label is configured with a warning message. If it isn't, full_label
+		is configured with "". 
+		'''
+		if self.ring_space <= 0:
+			self.full_label.config(text = "Elements may overlap")
+		else:
+			self.full_label.config(text = "")
+			       
 	def delete_element(self, py_list):
 		'''Delete last element in the cell/ring
 		
@@ -866,6 +860,7 @@ class Gui():
 				self.ring_space += self.space_list[-1]
 				self.space_list = self.space_list[:-1]
 				self.space_label.config(text = "Ring space: " + str(self.ring_space))
+				self.check_full()
 			else:
 				print("Already empty")
 		
@@ -1013,7 +1008,7 @@ class Gui():
 		
 		#Make new widgets
 		self.reset_ring_button = tk.Button(self.root, text = "reset ring", command = lambda: self.reset_ring(OPAL_list, py_list, beam_list))
-		self.reset_ring_button.grid(row = 9, column = 0)
+		self.reset_ring_button.grid(row = 10, column = 0)
 		ring_tip = Hovertip(self.reset_ring_button, "Choose new ring settings \n(beam unchanged).")
 		self.reset_beam = tk.Button(self.root, text = "Change beam", command = lambda: self.change_beam(beam_list, False, ""))
 		self.reset_beam.grid(row = 6, column = 2)
@@ -1023,9 +1018,9 @@ class Gui():
 		reset_tip = Hovertip(self.restart_button, "Reset all and start again.")
 		
 		self.cart_img = tk.Label(self.root, image = self.cart_photo) #update plot images
-		self.cart_img.grid(row = 10, column = 0)
+		self.cart_img.grid(row = 11, column = 0)
 		self.cyl_img = tk.Label(self.root, image = self.cyl_photo)
-		self.cyl_img.grid(row = 10, column = 2)
+		self.cyl_img.grid(row = 11, column = 2)
 
 def validate_input(user_input, lower_bound, upper_bound):
 	'''Validates the user input according to bounds

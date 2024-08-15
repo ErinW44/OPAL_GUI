@@ -4,6 +4,7 @@ variables.
 '''
 import tkinter as tk
 import sys
+import numpy as np
 
 MAX_FLOAT = sys.float_info.max
 MIN_FLOAT = sys.float_info.min
@@ -104,14 +105,12 @@ COLOURS_KEY ={
     					]
   }
   
-def define_bounds_dict(radius, ring_space):
+def define_bounds_dict(radius):
 	'''Makes dictionary of all elements and the bounds of each of their settings.
 	
 	----arguments----
 	radius: float
 		radius of ring
-	ring_space: float
-		space remaining in the ring
 	
 	----returns----
 	bounds_dict: dict
@@ -175,7 +174,7 @@ def define_bounds_dict(radius, ring_space):
 		"Drift": [
 		  [
 		    MIN_FLOAT,
-		    ring_space/radius
+		    2 * np.pi
 		  ]
 		],
 		"RF Cavity": [
@@ -219,7 +218,7 @@ def define_bounds_dict(radius, ring_space):
 		"RF more": [
 		  [
 		   	MIN_FLOAT,
-		   	ring_space
+		   	MAX_FLOAT
 		  ],
 		  [
 		  	MIN_FLOAT,
@@ -233,7 +232,7 @@ def define_bounds_dict(radius, ring_space):
 		"Multipole": [
 		  [
 		    0,
-		    ring_space
+		    MAX_FLOAT
 		  ],
 		  [
 		    0,
@@ -317,12 +316,10 @@ def make_beam_display(beam_list, start_coords):
 	
 	return beam_display
 
-def make_all_options(max_length, max_angle, radius):
+def make_all_options(max_angle, radius):
 	'''Make dictionary of every element and the widgets used to get user input for their settings
 	
 	----arguments----
-	max_length: float
-		maximum length an element can be and still fit in ring
 	max_angle: float
 		maximum angle an element can take up (from centre of ring) and still fit in ring
 	radius: float
@@ -555,7 +552,7 @@ def make_all_options(max_length, max_angle, radius):
 			{
 				"widget":tk.Label, 
 				"options":{
-					"text":"length (0 to " + str(max_length) + " m)"
+					"text":"length (above 0 [m])"
 					}
 			}, 
 			{
@@ -590,7 +587,7 @@ def make_all_options(max_length, max_angle, radius):
 			{
 				"widget":tk.Label, 
 				"options":{
-					"text":"length (0 to " + str(max_length) + " m)"
+					"text":"length (above 0 [m])"
 					}
 			}, 
 			{
