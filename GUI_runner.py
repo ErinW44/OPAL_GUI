@@ -21,6 +21,11 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		
 		Inherits from the runner used in test_track_run_scaling_ffa.py, which in turn inherits from the original minimal 
 		runner class defined by OPAL. 
+		
+		----arguments----
+			OPAL_list
+			py_list
+			beam_list
 		'''
 		super().__init__()
 		self.verbose = 1
@@ -34,31 +39,27 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		selected by the user in the GUI code. 
 		
 		----arguments----
-		beam_list
+			beam_list
 		
 		---variables/attributes defined inside---
-		beam: OPAL object
-			OPAL beam object
-		particle: str
-			particle type used in beam (chosen by user, accessed from beam_list)
-		momentum: float
-			momentum of beam
-		gamma: float
-			gamma value of beam (chosen by user, accessed from beam_list)
-		beam_frequency: float
-			frequency of beam. Set to default value here (maybe add option to choose it?)
-		number_of_slices: int
-			number of slices in a bunch. Set to default value here (maybe add option to choose?)
-		momentum_tolerance: bool
-			enables or disables momentum tracking. Set to 0 here 
+			beam: OPAL object
+				OPAL beam object
+			particle: str
+				particle type used in beam (chosen by user, accessed from beam_list)
+			gamma: float
+				gamma value of beam (chosen by user, accessed from beam_list)
+			beam_frequency: float
+				frequency of beam. Set to default value here (maybe add option to choose it?)
+			number_of_slices: int
+				number of slices in a bunch. Set to default value here (maybe add option to choose?)
+			momentum_tolerance: bool
+				enables or disables momentum tracking. Set to 0 here 
 		"""
 		
 		beam = pyopal.objects.beam.Beam()
 		beam.set_opal_name("DefaultBeam")
 		beam.particle = beam_list[0].upper()
-		#beam.momentum = self.momentum
 		beam.gamma = beam_list[1]
-		print(beam.gamma, beam.momentum, beam.energy)
 		beam.beam_frequency = 1e-6/self.time_per_turn # MHz
 		beam.number_of_slices = 10
 		beam.number_of_particles = int(self.distribution_str.split()[0])
@@ -72,14 +73,18 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		Make an OPAL polynomial time dependence object with the coefficients chosen by the user in the GUI/option_window code.
 		
 		----arguments----
-		name: str
-			name of object
-		pol0: float
-			polynomial coefficient 0 (chosen by user)
-		pol1: float
-			polynomial coefficient 1 (chosen by user)
-		pol2: float
-			polynomial coefficient 2 (chosen by user)
+			name: str
+				name of object
+			pol0: float
+				polynomial coefficient 0 (chosen by user)
+			pol1: float
+				polynomial coefficient 1 (chosen by user)
+			pol2: float
+				polynomial coefficient 2 (chosen by user)
+		
+		----returns----
+			time_dep: 
+				OPAL time dependence object
 		'''
 		time_dep = pyopal.elements.polynomial_time_dependence.PolynomialTimeDependence()
 		time_dep.p0 = pol0
@@ -117,19 +122,19 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		in the ring. Runs OPAL methods in sequence. 
 		
 		----arguments----
-		py_list
-		OPAL_list
-		beam_list
-		
+			py_list
+			OPAL_list
+			beam_list
+			
 		---variables/attributes defined inside---
-		element_num: int
-			number of elements in the ring, accessed by the get_number_of_elements method of the field object
-		name: str
-			name of element
-		element_start: list
-			(x,y,z) coordinates of the start of the element
-		element_end:
-			(x,y,z) coordinates of the end of the element
+			element_num: int
+				number of elements in the ring, accessed by the get_number_of_elements method of the field object
+			name: str
+				name of element
+			element_start: list
+				(x,y,z) coordinates of the start of the element
+			element_end:
+				(x,y,z) coordinates of the end of the element
 		'''
 		here = os.getcwd()
 		OPAL_list *= 0
@@ -169,9 +174,9 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		Overloads minimal_runner's execute fork so it takes the lists in shared memory as arguments
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		'''
 		a_pid = os.fork()
 		if a_pid == 0: # the child process
@@ -184,39 +189,38 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 	def make_element_iterable(self, py_list):
 		""" Return an iterable (e.g. list) of elements to append to the line
 		
-		Overload the method in MinimalRunner to place the field elements in the lattice. Iterates through py_list and
-		adds elements to the ring list. Note RF cavites are handled differently, as the time dependences are OPAL objects 
-		and can't be stored in py_list. Thus, they must be defined as part of the pyOpal code here. 
+		Overload the method in MinimalRunner. Iterates through py_list and adds elements to the ring list. Note RF 
+		cavites are handled differently, as the time dependences are OPAL objects and can't be stored in shared memory.
+		Thus, they must be defined as part of the pyOpal code here. 
 		
 		----arguments----
-		py_list
+			py_list
 		
 		----returns----
-		ring + probes: list
-			list of elements and probes in the ring
+			ring + probes: list
+				list of elements and probes in the ring
 		
 		---variables/attributes defined inside---
-		probes: list
-			list of OPAL Probe objects. Set without user input here (maybe change?)
-		ring: list
-			list of OPAL element objects in the ring
-		ElementClass: str
-			name of the class of the current element
-		new_element: OPAL element object
-			instantiated version of the current element with default attributes
-		args: dict
-			dictionary containing the arguments for the current element
-		phase, voltage, frequency: time dependence objects
-			time dependence objects defined with user inputs for each of the phase, voltage and time arguments
-			of the RF cavity
-		
-		for each of phase, amplitude and frequency:
-		p0: float
-			p0 coefficient
-		p1: float
-			p1 coefficient
-		p2: float
-			P2 coefficient
+			probes: list
+				list of OPAL Probe objects. Set without user input here (maybe change?)
+			ring: list
+				list of OPAL element objects in the ring
+			ElementClass: str
+				name of the class of the current element
+			new_element: OPAL element object
+				instantiated version of the current element with default attributes
+			args: dict
+				dictionary containing the arguments for the current element
+			phase, voltage, frequency: time dependence objects
+				time dependence objects defined with user inputs for each of the phase, voltage and time arguments
+				of the RF cavity
+			for each of phase, amplitude and frequency:
+			p0: float
+				p0 coefficient
+			p1: float
+				p1 coefficient
+			p2: float
+				P2 coefficient
 		"""
 		probes = [self.build_probe(360.0/self.n_cells*i) for i in range(self.n_cells)]
 		ring = []
@@ -253,25 +257,23 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		return ring+probes
 	
 	def make_distribution(self, beam_list):
-		"""Make a distribution
+		"""Make a distribution object
 		
 		Defines distribution_str from the start coordinates and momenta in beam_list. Makes the initial beam distribution
 		of the PyOPAL simulation. Uses the FROMFILE type, with the file containing only distribution_str (makes 1 particle 
 		with chosen start coordinates and momenta). 
 		
 		----arguments----
-		beam_list
+			beam_list
 		
 		----returns----
-		distribution: OPAL object
+			distribution: OPAL object
 		
 		---variables/attributes defined inside---
-		distribution_str: str
-			string containing start coordinates and momenta of particle.
-		dist_file: file object
-			file that distribution_str is written to and then read from
-		distribution_str: str
-			the string containing the initial coordinates and momenta of the particle, correctly formatted for OPAL 
+			dist_file: file object
+				file that distribution_str is written to and then read from
+			distribution_str: str
+				the string containing the initial coordinates and momenta of the particle, correctly formatted for OPAL 
 		"""
 		start_coords = beam_list[2]
 		
@@ -300,13 +302,14 @@ class Runner(test_track_run_scaling_ffa.ScalingFFARunner):
 		"""Make plots showing rectangular and cylindrical field maps
 		
 		Overloads test_track_run_scaling_ffa.py runner method by defining a mapper from a different file. This mapper is 
-		different from the original in that it plots the beam trajectory on the cartesian field map.
+		different from the original in that it plots the beam trajectory on the cartesian field map and has axes that scale
+		with ring radius.
 		
 		---variables/attributes defined inside---
-		mapper: object
-			instance of FFAFieldMapper class from object from ffa_field_mapper_2.py
-		res: float
-			controls the number of and range of points plotted in the cartesian field map
+			mapper: object
+				instance of FFAFieldMapper class from object from ffa_field_mapper_2.py
+			res: float
+				controls the number of and range of points plotted in the cartesian field map
 		"""
 		
 		mapper = ffa_field_mapper_2.FFAFieldMapper()

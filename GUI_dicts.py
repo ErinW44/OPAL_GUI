@@ -331,7 +331,7 @@ def make_all_options(max_length, max_angle, radius):
 	----returns----
 	all_options: dict
 			dictionary containing the list of widgets for each element. Structure is 
-			{"name of element":[{"widget": tkinter widget object, "options"{dict of widget arguments},....}],....}
+			{"name of element":[{"widget": tkinter widget object, "options"{dict of widget arguments},...}],...}
 	'''
 	all_options = {
 		"Scaling FFA magnet": [

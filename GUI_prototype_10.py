@@ -16,7 +16,7 @@ import GUI_runner
 import numpy as np
 import opt_window
 import GUI_dicts
-from idlelib.tooltip import Hovertip #makes tooltips
+from idlelib.tooltip import Hovertip 
 
 MAX_FLOAT = sys.float_info.max
 MIN_FLOAT = sys.float_info.min
@@ -39,9 +39,9 @@ class Gui():
 		Sets the intial values of key counters and flags, then calls the make_interface method. 
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
 			fork_number: int
@@ -64,9 +64,9 @@ class Gui():
 		Makes main window and defines widgets for setting up the ring and beam, or just the ring if ring_flag is true. 
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
 			root: 
@@ -119,9 +119,9 @@ class Gui():
 		appends the beam settings to beam_list. If invalid, prompts user to try again.
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
 			radius: float
@@ -132,6 +132,8 @@ class Gui():
 				contains all widgets used in setting up the beam
 			invalid_flag: Bool
 				used whenever there is validation. True if any invalid input was encountered, False otherwise.
+			display_message: str
+				contains error message is an invalid input is found. "" if no invalid inputs found. 
 		'''
 		#validate radius input
 		invalid_flag = False
@@ -177,7 +179,6 @@ class Gui():
 			else:
 				self.set_beam(beam_list, beam_list[0], beam_list[1], beam_list[2])
 			
-			#move to ring setup screen
 			self.setup_ring(OPAL_list, py_list, beam_list)
 	
 	def setup_ring(self, OPAL_list, py_list, beam_list):
@@ -188,9 +189,9 @@ class Gui():
 		repeatable cell element, and sets some flags.
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
 			runner: OPAL Runner object
@@ -236,17 +237,17 @@ class Gui():
 		for a cell being made instead of ring. Sets some attributes describing the cell.
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
-		cell_length_list: list
-			contains the lengths of each element added to cell so the cell element can be deleted form the ring later on
-		cell: list
-			contains every element in the cell and its settings
-		cell_size: float
-			stores the current length of the cell
+			cell_length_list: list
+				contains the lengths of each element added to cell so the cell element can be deleted form the ring later on
+			cell: list
+				contains every element in the cell and its settings
+			cell_size: float
+				stores the current length of the cell
 		'''
 		#destroy old widgets
 		self.make_cell_text.destroy()
@@ -291,9 +292,9 @@ class Gui():
 		Moves from the cell building screen to the ring building screen, setting flags and destroying cell making
 		widgets.  
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		'''
 		#destroy old widgets
 		self.cell_label.destroy()
@@ -315,16 +316,17 @@ class Gui():
 		'''Displays widgets for building the ring
 		
 		Lets user add elements. Uses flags tp operate differently if a cell has been defined. If the cell has been defined, the
-		cell creation widgets are destroyed, and the cell is listed as an option in the menu for adding elements. 
+		cell creation widgets are destroyed, and the cell is listed as an option in the menu for adding elements. Run button 
+		appears, which runs OPAL when clicked. 
 		
 		----arguments----
-		OPAL_list
-		py_list
-		beam_list
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
-		space_list: list
-			list of the lengths of each element added (like cell_length_list but for the full ring)
+			space_list: list
+				list of the lengths of each element added (like cell_length_list but for the full ring)
 		'''
 		#destroy old widgets if cell was made
 		if self.cell_widgets == True:
@@ -374,20 +376,20 @@ class Gui():
 		settings need to be chosen.
 		
 		----arguments----
-		choice: tkinter StringVar object
-			stores the value currently displayed in the element option menu
-		py_list
+			choice: tkinter StringVar object
+				stores the value currently displayed in the element option menu
+			py_list
 		
 		---variables/attributes defined inside---
-		new_element: str
-			stores the name of the new element being added
-		BOUNDS_DICT: dict
-			dictionary containing bounds for each setting of every element
-		element_display: str
-			string containing the contents of the ring and the settings of each element. Displayed in a label
-		options_window:
-			object from the class in opt_window.py. Opens a new window and shifts focus to it so main window can't be edited
-			whilst it's open
+			new_element: str
+				stores the name of the new element being added
+			BOUNDS_DICT: dict
+				dictionary containing bounds for each setting of every element
+			element_display: str
+				string containing the contents of the ring and the settings of each element. Displayed in element_label widget
+			options_window:
+				object from the class in opt_window.py. Opens a new window and shifts focus to it so main window can't be edited
+				whilst it's open
 		
 		Note that for each element added, a dictionary is defined containing its settings and a list defined for appending to
 		py_list. Their structures are as follows:
@@ -434,39 +436,26 @@ class Gui():
 	def get_choices(self, scale_list, new_element, py_list):
 		'''Gets user inputs from option window and validates them.
 		
-		Uses the scale_list attribute from options_window, which contains a list of all widgets taking user input. Iterates through
-		this list, getting the value from each input and validating it using the bounds. If any input invalid, the options screen is 
-		destroyed and a message printed. If all inputs valid, options_window is destroyed and a function is called based on what 
-		element has been chosen. 
+		Gets the scale_list attribute from options_window, which contains a list of all widgets taking user input. Validates
+		inputs using the validation_loop function, which returns invalid_flag, the list of validated settings, and an error 
+		message if any are invalid. If invalid_flag is set, the options screen is destroyed and the error message printed. If 
+		all inputs valid, options_window is destroyed and a function is called based on what  element has been chosen. 
 		
 		----arguments----
-		scale_list: list
-			list containing all the input widgets in the options window
-		new_element: str
-			name of element selected from menu
-		py_list
+			scale_list: list
+				list containing all the input widgets in the options window
+			new_element: str
+				name of element selected from menu
+			py_list
 		
 		---variables/attributes defined inside---
-		invalid_flag: Bool
-			flag that says whether and invalid input has been encountered. Set to True if validation fails for any setting
-		chosen_settings: list
-			list containing the validated settings chosen for the element by the use
-		scale_list: list
-			list of all widgets used for input in options window
-		setting: str	
-			temporary variable storing the raw value obtained from the input widget
-		bounds_list: list
-			list containing the upper and lower bound of each setting
-		lower_bound: float
-			lower bound of setting
-		upper_bound: float
-			upper bound of setting
-		valid: 
-			value returned by validation function called on setting. None if invalid, and validated setting if valid
+			chosen_settings: list
+				list containing the validated settings chosen for the element by the user
 		'''
-		self.chosen_settings = []
-		self.chosen_settings, invalid_flag, display_message = validation_loop(scale_list, self.BOUNDS_DICT[new_element], self.chosen_settings)
+		#gets and validates user inputs
+		self.chosen_settings, invalid_flag, display_message = validation_loop(scale_list, self.BOUNDS_DICT[new_element], [])
 		
+		#proceeds based on which element was added
 		if invalid_flag == False:
 			self.invalid_label.config(text = "")
 			if new_element == "Scaling FFA magnet":
@@ -486,7 +475,7 @@ class Gui():
 			self.invalid_label.config(text = display_message)
 
 	def update_with_element(self, py_list, new_element, display_settings, length, add):
-		'''Updates displays and the relevant list with element added
+		'''Updates displays and the relevant lists with element added
 		
 		If the element was added to the cell, cell_display gets updated and the element is appended to the cell list. If added
 		to the ring, element_display is updated and the element appended to py_list. The length is added to cell_size and appended
@@ -501,13 +490,17 @@ class Gui():
 				length of element added
 			add: list
 				data added to py_list or cell. Structure is [{"element_type": pyOpal object, "length":length}, settings] 
+				
+		---variables/attributes defined inside---
+		display: str
+			text containing the new element's name and displayed attributes. Added to cell or ring display.
 		'''
-		display = ""
-		display += new_element
+		display = new_element
 		for key in display_settings:
 			display += ", " + key + ": " + str(display_settings[key]) 
 		display += "\n"
 		
+		#update relevant widgets, lists and flags
 		if self.making_cell == True:
 			self.cell_display += display
 			self.cell_label.config(text = self.cell_display)
@@ -525,11 +518,10 @@ class Gui():
 	def get_orders(self, py_list):
 		'''Lets user choose the field strength of each pole in a multipole element
 		
-		Multipole handled differently in options_window. This uses the options_window attribute slider_list, which is a list of
-		field strength entries needed based on the number of poles the user selected (displayed in the options window). This list
-		is iterated through and the value got from each slider. These are validated in the same way as before. If invalid input
-		encountered, the addition of the multipole is cancelled. If all inputs valid, they are appended to a list of field strengths
-		and add_multipole is called.
+		Multipole handled differently in options_window. This method uses the options_window attribute scale_list, which now contains all 
+		the field strength entries needed based on the number of poles the user selected (displayed in the options window). Inputs are 
+		obtained and validated with validation_loop. If any inputs are invalid, the addition of the multipole is cancelled. If all inputs 
+		valid, they are appended to a list of field strengths and add_multipole is called.
 		
 		----arguments----
 		py_list
@@ -563,7 +555,7 @@ class Gui():
 		invalid, this screen is called again and a message printed.
 		
 		----arguments----
-		py_list
+			py_list
 		'''
 		
 		self.chosen_settings, invalid_flag, display_message = validation_loop(self.options_window.scale_list, self.BOUNDS_DICT["RF more"], self.chosen_settings)
@@ -580,6 +572,11 @@ class Gui():
 		'''Resets the entire program and starts again. 
 		
 		All initial attributes are reset, as well as the lists in shared memory. make_interface is then called.	
+		
+		----arguments----
+			OPAL_list
+			py_list
+			beam_list
 		'''
 		py_list *= 0 
 		OPAL_list *= 0
@@ -594,6 +591,11 @@ class Gui():
 		
 		Clears py_list and OPAL_list in shared memory, and sets ring_flag to True so only the ring is set up when make_interface
 		is called. 
+		
+		----arguments----
+			OPAL_list
+			py_list
+			beam_list
 		'''
 		py_list *= 0
 		OPAL_list *= 0
@@ -605,27 +607,28 @@ class Gui():
 	def add_ffa_mag(self, py_list):
 		'''Adds an FFA magnet to the ring/cell
 		
-		Sets parameters from user input and defines settings as a dictionary. If making a ring, and there is enough space,
-		the magnet is added to the ring and its length subtracted from ring_space. The element and its settings are added
-		to py_list. If making a cell, the magnet size is added to the cell size and the settings appended to the cell array.
-		Either element_display or cell_display updated with the magnet and its settings. 
+		Sets parameters from user input and defines the settings dictionary. The update_with_element method is called at the end
+		to append settings and add to the relevant list, and update the relevant displays and flags. It is first checked if the ring
+		is full, and a message displayed if it is. 
 		
 		----arguments----
-		py_list
+			py_list
 		
 		---variables/attributes defined inside---
-		b0: float
-			b0 constant in expression for magnetic field [T]
-		k_value: float
-			field index
-		f_start:
-			distance from start of magnet at which field rises to half the peak value [m]
-		f_centre_length: float
-			length of the plateau of field strength [m]
-		f_end: float
-			distance from end of plateau to start of next element (determines how fast field drops off) [m]
-		temp_space: float
-			temporary variable used to check if ring is full (if adding to ring and not cell)
+			b0: float
+				b0 constant in expression for magnetic field [T]
+			k_value: float
+				field index
+			f_start:
+				distance from start of magnet at which field rises to half the peak value [m]
+			f_centre_length: float
+				length of the plateau of field strength [m]
+			f_end: float
+				distance from end of plateau to start of next element (determines how fast field drops off) [m]
+			temp_space: float
+				temporary variable used to check if ring is full (if adding to ring and not cell)
+			display_settings: dict
+				contains the attribute names and values that are to be shown in element/cell display labels
 		'''
 		#set chosen settings
 		b0 = self.chosen_settings[0]
@@ -640,9 +643,7 @@ class Gui():
 		temp_space = self.ring_space
 		temp_space -= f_end
 		
-		#check if ring full
 		if temp_space >= 0:
-			#define settings and list appended to py_list or cell
 			settings = {
 				"b0":b0, 
 				"r0":self.radius, 
@@ -658,7 +659,13 @@ class Gui():
 			
 			add = [{"element_type":pyopal.elements.scaling_ffa_magnet.ScalingFFAMagnet}, settings]
 			
-			display_settings = {"b0": b0, "k":k_value, "start":f_start, "centre_length":f_centre_length, "end length":f_end_length}
+			display_settings = {
+							"b0": b0, 
+							"k":k_value, 
+							"start":f_start, 
+							"centre_length":f_centre_length, 
+							"end length":f_end_length
+							}
 			self.update_with_element(py_list, "Scaling FFA magnet", display_settings, f_end, add)
 			
 		#tell user ring is full
@@ -670,17 +677,15 @@ class Gui():
 	def add_drift(self, py_list):
 		'''Adds a drift space to the ring/cell
 		
-		Sets parameters from user input and defines settings and add. If the ring is being made and there is enough space,
-		adds the drift to the ring and subtracts length (calculated from angle) from ring space. The element and its settings
-		are added to py_list. If making a cell, the drift size is added to the cell size and the settings appended to the 
-		cell array. Either element_display or cell_display updated with the magnet and its settings
+		Sets parameters from user input and defines settings and add. The update_with_element method is called at the end
+		to append settings and add to the relevant list, and update the relevant displays and flags.
 		
 		----arguments----
-		py_list
+			py_list
 		
 		---variables/attributes defined inside---
-		req_angle: float
-			angle taken up by drift space (from centre of ring) [rad]
+			req_angle: float
+				angle taken up by drift space (from centre of ring) [rad]
 		'''
 		req_angle = self.chosen_settings[0]
 		
@@ -700,19 +705,16 @@ class Gui():
 	def add_multipole(self, py_list):
 		'''Add a general multipole to ring/cell
 		
-		Sets list of field strengths and length from user input and defines settings and add. If the ring is being made,
-		adds the drift to the ring and subtracts length from ring space. The element and its settings are added to py_list. 
-		If making a cell, the length is added to the cell size and the settings appended to the cell array. Either
-		element_display or cell_display updated with the magnet and its settings. Note that the bounds of length were defined 
-		by ring_space, so no need to check if ring is full.
+		Sets list of field strengths and length from user input and defines settings and add. The update_with_element method 
+		is called at the end to append settings and add to the relevant list, and update the relevant displays and flags.
 		
 		----arguments----
-		py_list
+			py_list
 		
 		---variables/attributes defined inside---
-		length and t_p as before
-		angle: float
-			angle taken up by multipole (from centre of ring) [m]. Calculated from length
+			length and t_p as before
+			angle: float
+				angle taken up by multipole (from centre of ring) [m]. Calculated from length
 		'''
 
 		length = self.chosen_settings[0]
@@ -737,7 +739,10 @@ class Gui():
 		
 		add = [{"element_type":pyopal.elements.multipolet.MultipoleT}, settings]
 		
-		display_settings = {"fields":t_p, "length": length}
+		display_settings = {
+						"fields":t_p, 
+						"length": length
+						}
 		self.update_with_element(py_list, "Multipole", display_settings, length, add)
 
 		self.confirm.destroy()
@@ -747,13 +752,11 @@ class Gui():
 		
 		Sets time dependence coefficients for phase, amplitude and frequency from user input, as well as cavity dimensions. Defines
 		settings and add, but these are later updated in OPAL code to include the time dependence objects (as defined objects can't 
-		be in shared memory). If the ring is being made, adds the cavity to the ring and subtracts length from ring space. The element 
-		and its settings are added to py_list.  If making a cell, the length is added to the cell size and the settings appended to the 
-		cell array. Either element_display or cell_display updated with the magnet and its settings. Note that the bounds of length were 
-		defined by ring_space, so no need to check if ring is full.
+		be in shared memory). The update_with_element method is called at the end to append settings and add to the relevant list, and 
+		update the relevant displays and flags.
 		
 		----arguments----
-		py_list
+			py_list
 		
 		---variables/attributes defined inside---
 		for each of phase, amp and freq:
@@ -798,29 +801,32 @@ class Gui():
 
 		add = [{"element_type":pyopal.elements.variable_rf_cavity.VariableRFCavity}, settings]
 		
-		display_settings = {"length":length, "width": width, "height":height}
+		display_settings = {
+						"length":length, 
+						"width": width, 
+						"height":height
+						}
 		self.update_with_element(py_list, "RF", display_settings, length, add)
         
 	def delete_element(self, py_list):
 		'''Delete last element in the cell/ring
 		
-		Deletes last element in the cell/ring by removing the last element from the cell or py_list. First, it is checked whether 
-		the ring/cell is already empty or not, and a message returned if it is. The space is added/subtracted from the ring/cell 
-		using space_list or cell_length_list as stacks and subtracting the last length. If the cell element is removed from the 
-		ring, cell_length list is iterated through and each length subtracted from ring_space. The number of indices from py_list
-		to be removed is calculated, and py_list updated. cell_display or element_display also updated.
+		Checks if the ring/cell is already empty, and shows a message if it is. The length of the deleted element is added/subtracted 
+		from ring_space/cell_size using space_list or cell_length_list as stacks and deleting the last index. If the cell element is 
+		removed from the ring, cell_length list is iterated through and each length added to ring_space, and the number of indices from
+		py_list to be removed is calculated. py_list/cell updated, as well as element_display/cell_display. 
 		
 		----arguments----
-		py_list
+			py_list
 		
 		---variables/attributes defined inside---
-		string: list
-			list made from splitting cell_display or element_display at new line characters. Indices removed from string, 
-			and the display reformed from the remaining elements.
-		display_add: str
-			each line of the display to be added to cell_display or element_display. Formed from iterating through string
-		delete_indices: int
-			number of indices to be removed from the ring if the cell element is deleted. Calculated from length of cell  
+			string: list
+				list made from splitting cell_display or element_display at new line characters. Indices removed from string, 
+				and the display re-formed from the remaining elements.
+			display_add: str
+				each line of the display to be added to cell_display or element_display. Formed from iterating through string
+			delete_indices: int
+				number of indices to be removed from the ring if the cell element is deleted. Calculated from length of cell  
 		'''
 		#checks if cell or ring is being made
 		if self.making_cell == True:
@@ -862,25 +868,30 @@ class Gui():
 			else:
 				print("Already empty")
 		
-	def change_beam(self, beam_list, invalid_flag):
+	def change_beam(self, beam_list, invalid_flag, display_message):
 		'''Lets user edit the beam settings
 		
 		Runs if the user presses the "change beam" button, and lets them choose new beam settings by defining a new 
 		option_window object. option_window's beam_options() method is run, taking the particle_choice variable as an argument. 
-		The ring is not changed during this process. Can also be called if invalid inputs have been found. If a window containing
-		the ring display is open, it is closed (done by checking fork_number, which is greater than 1 if a ring display has been
-		made). 
+		The ring is not changed during this process. Can also be called if invalid inputs have been found, and shows an error 
+		message in this case. If ring display window is open, it is closed (done by checking fork_number, which is greater than 
+		1 if a ring display has been made).
 		
 		----arguments----
-		beam_list
+			beam_list
+			invalid_flag
+			displa_message: str
+				error message if invalid inputs found in check_beam. "" if called from button
 		
 		---variables/attributes defined inside---
-		particle_choice: StringVar object
-			stores choice made by user from the menu in the options window
+			particle_choice: StringVar object
+				stores choice made by user from the menu in the options window
 		'''
+		#destroy ring display
 		if self.fork_number >= 1:
 			self.root_2.destroy()
-			
+		
+		#define options_window and run beam_options
 		self.options_window = opt_window.Options_Window()
 		particle_choice = tk.StringVar(self.root)
 		particle_choice.set("proton")
@@ -889,19 +900,17 @@ class Gui():
 		self.beam_confirm.grid()
 		
 		if invalid_flag == True:
-			self.options_invalid_label = tk.Label(self.options_window, text = "Not valid, try again")
+			self.options_invalid_label = tk.Label(self.options_window, text = display_message)
 			self.options_invalid_label.grid()
 		
 	def check_beam(self, beam_list):
 		'''Validates user inputs from change_beam
 		
-		Called at the end of change_beam, and validates each input using the bounds defined in option_window's input_list attribute.
-		If an invalid value is found, change_beam is called again. If all inputs are valid, gamma and start_coords are set and set_beam 
-		is called. invalid_flag and valid are used as before for validation routine, and setting and beam_settings as before for 
-		defining the chosen settings for the beam.
+		Called at the end of change_beam. Gets and validates beam settings from option_window's input_list attribute with
+		validation loop. If all inputs are valid, gamma and start_coords are set and set_beam is called.
 		
 		----arguments----
-		beam_list
+			beam_list
 		'''
 		#sets particle choice as user input
 		particle = self.options_window.particle_choice.get().upper()
@@ -918,42 +927,28 @@ class Gui():
 			start_coords = [beam_settings[1], beam_settings[2], beam_settings[3], beam_settings[4], beam_settings[5], beam_settings[6]]
 			self.set_beam(beam_list, particle, gamma, start_coords)
 		else:
-			self.change_beam(beam_list, True)
+			self.change_beam(beam_list, True, display_message)
 	
 	def set_beam(self, beam_list, particle, gamma, start_coords):
 		'''Sets the chosen and validated beam settings
 		
-		Updates beam_list with the new settings, either by appending them if the list is empty, or changing indices
-		directly if already contains settings. Defines a dictionary of the beam information to be displayed on screen and makes
-		widgets using this. If the code has already been run once (fork_number >= 1) and the ring is not being changed too, the 
-		previous display is removed before the new one is made. 
-		
-		Note that all the initial coordinates and momenta are relative to the ideal particle
+		Updates beam_list with new settings by appending them if the list is empty, or changing indices
+		directly if it contains previous settings. Displays beam information on screen using BEAM_DISPLAY from GUI_dicts
+		and the display_widgets function. If the code has already been run once (fork_number >= 1) and ring_flag isn't set,
+		the previous display is removed first. 
 		
 		---arguments----
-		beam_list
-		particle: str
-			particle chosen by user from option menu
-		gamma: float
-			gamma chosen by user from entry box and validated
-		start_coords: list
-			list of the start coordinates and momenta of the particle, chosen by user from entry boxes and validated
+			beam_list
+			particle: str
+				particle chosen by user from option menu
+			gamma: float
+				gamma chosen by user from entry box and validated
+			start_coords: list
+				list of the start coordinates and momenta of the particle. Coordinates are relative to ideal particle
 		
 		---variables/attributes defined inside---
-		initial_x: float
-			initial x-coordinate of particle in the beam
-		initial_px: float
-			initial momentum in x-direction of particle
-		initial_u: float
-			initial y-coordinate of particle in the beam
-		initial_py: float
-			initial momentum in y-direction of particle
-		initial_z: float
-			initial z-coordinate of particle in the beam
-		initial_pz: float
-			initial momentum in z-direction of particle
-		BEAM_DISPLAY: list of dicts
-			contains a list of dictionaries, each containing a widget and its settings
+			BEAM_DISPLAY: list of dicts
+				contains a list of dictionaries, each containing a widget and its settings
 		'''
 		#updates beam_list
 		if len(beam_list) == 0:
@@ -984,10 +979,14 @@ class Gui():
 		run once already (fork_number >= 2). Creates new image widgets from the field maps produced by OPAL, and displays 
 		buttons for changing the beam, resetting the ring, or resetting all. 
 		
-		child: Process object
-			multiprocessing process containing the runner's execute_fork method
+		----arguments----
+			OPAL_list
+			py_list
+			beam_list
 		
 		---variables/attributes defined inside---
+			child: Process object
+				multiprocessing process containing the runner's execute_fork method
 			root_2: RingDisplay object
 				defined with RingDisplay class
 		'''
@@ -1015,7 +1014,7 @@ class Gui():
 		self.reset_ring_button = tk.Button(self.root, text = "reset ring", command = lambda: self.reset_ring(OPAL_list, py_list, beam_list))
 		self.reset_ring_button.grid(row = 9, column = 0)
 		ring_tip = Hovertip(self.reset_ring_button, "Choose new ring settings \n(beam unchanged).")
-		self.reset_beam = tk.Button(self.root, text = "Change beam", command = lambda: self.change_beam(beam_list, False))
+		self.reset_beam = tk.Button(self.root, text = "Change beam", command = lambda: self.change_beam(beam_list, False, ""))
 		self.reset_beam.grid(row = 6, column = 2)
 		beam_tip = Hovertip(self.reset_beam, "Choose new beam settings \n(ring unchanged).")
 		self.restart_button = tk.Button(self.root, text = "reset all", command = lambda: self.reset(OPAL_list, py_list, beam_list))
@@ -1051,45 +1050,44 @@ class RingDisplay(tk.Toplevel):
 	def draw_OPAL(self, OPAL_list):
 		'''Draws the ring and displays the position of all elements in it
 		
-		Creates a circle in the centre of the screen representing the ring using the Circle class. Iterates through 
-		OPAL_list in shared memory space to access the start and end positions of each element in the ring. Finds the 
-		angle around the ring of each element using the find_angle function, and plots each element as a square.
-		These are created using tkinter polygons, whose first and last vertices are the element's start and end points,
-		and whose other vertices are calculated from width and angle. Colour of each element is determined the COLOURS_KEY
-		dictionary. 
+		Creates a circle in the centre of the screen using the Circle class. Iterates through OPAL_list to access the 
+		start and end positions of each element in the ring. Finds the angle around the ring of each element using the
+		find_angle function, and plots each element as a square. These are created using tkinter polygons, whose first 
+		and last vertices are the element's start and end points, and whose other vertices are calculated from width and
+		angle. Colour of each element is determined the COLOURS_KEY dictionary. 
 		
 		----arguments----
-		OPAL_list
+			OPAL_list
 		
 		---variables/attributes defined inside---
-		scale_factor: float
-			factor by which the OPAL positions [m] are scaled for the drawing. Calculated from the ring size
-		circ_2: Circle object
-			circle object which draws a circle on the canvas of the chosen radius
-		name: str
-			contains the name of the OPAL class of each element (not instantiated)
-		start_x, start_y: floats
-			x and y coordinates of the element start. OPAL values scaled and offset by centre of circle in canvas
-		end_x, end_y: floats
-			x and y coordinates of the element end. OPAL values scaled and offset by centre of circle in canvas
-		start_angle: float
-			angle around the ring that the start point is at [rad]
-		end_angle: float
-			angle around the ring that the end point is at [rad]
-		angle_diff: float
-			angular width of element in ring [rad]
-		width: float
-			distance taken up in ring by element
-		x_1, y_1: floats
-			coordinates of the second polygon point (above start point)
-		x_2, y_2: floats
-			coordinates of third polygon point (above end point)
-		colour: str
-			colour of the element from COLOURS_KEY dictionary
-		points: list
-			contains the coordinates of each polygon vertex
-		element: tkinter polygon
-			polygon drawn on canvas
+			scale_factor: float
+				factor by which the OPAL positions [m] are scaled for the drawing. Calculated from the ring size
+			circ_2: Circle object
+				circle object which draws a circle on the canvas of the chosen radius
+			name: str
+				contains the name of the OPAL class of each element (not instantiated)
+			start_x, start_y: floats
+				x and y coordinates of the element start. OPAL values scaled and offset by centre of circle in canvas
+			end_x, end_y: floats
+				x and y coordinates of the element end. OPAL values scaled and offset by centre of circle in canvas
+			start_angle: float
+				angle around the ring that the start point is at [rad]
+			end_angle: float
+				angle around the ring that the end point is at [rad]
+			angle_diff: float
+				angular width of element in ring [rad]
+			width: float
+				distance taken up in ring by element
+			x_1, y_1: floats
+				coordinates of the second polygon point (above start point)
+			x_2, y_2: floats
+				coordinates of third polygon point (above end point)
+			colour: str
+				colour of the element from COLOURS_KEY dictionary
+			points: list
+				contains the coordinates of each polygon vertex
+			element: tkinter polygon
+				polygon drawn on canvas
 		'''
 		scale_factor = 300 / (1.5*self.radius)
 		circle_radius = self.radius * scale_factor
@@ -1125,14 +1123,14 @@ class RingDisplay(tk.Toplevel):
 		the point is at. Calculates using the cosine rule. 
 		
 		----arguments----
-		x: float
-			x_coordinate of point
-		y: float
-			y_coordinate of point
+			x: float
+				x_coordinate of point
+			y: float
+				y_coordinate of point
 		
 		----returns----
-		angle: float
-			angle around the ring the point is at [rad]
+			angle: float
+				angle around the ring the point is at [rad]
 		'''
 		delta_x = x - (300 + self.radius)
 		delta_y = y - 300
@@ -1159,12 +1157,15 @@ class Circle:
 		'''
 		Draws a ring at the centre of the canvas with the radius selected. 
 		
-		root: tkinter TopLevel object
-			window on which the circle is drawn
+		----arguments----
 		canvas: tkinter canvas object
 			canvas on which circle is drawn
+		root: tkinter TopLevel object
+			window on which the circle is drawn
 		radius: float
 			taken as an argument. The radius of the ring determined by the user input
+		
+		---variables/attributes defined inside---
 		centre_x, centre_y: ints
 			the x and y coordinates of the centre of the circle (currently hard-coded)
 		circ: tkinter circle
@@ -1199,12 +1200,10 @@ def validate_input(user_input, lower_bound, upper_bound):
 	try:
 		user_input = float(user_input)
 	except: 
-		print("Must be numerical")
 		return None, "must be numerical"
 	if user_input >= lower_bound and user_input <= upper_bound:
 		return user_input, None
 	else:
-		print("not in bounds")
 		return None, "not in bounds"
 
 def validation_loop(input_list, bounds_list, settings_list):
@@ -1252,22 +1251,22 @@ def display_widgets(root, widget_dict, widget_list, input_list, offset, col):
 	setting its args to those stored. Creates a list of all widgets, and a list of input widgets only.
 	
 	----arguments----
-	root: tk Root object
-		the window the widgets are displayed in
-	widget_list: list
-		list of widgets to be appended to 
-	input_list: list
-		list of input widgets to be appended to
-	offset: int
-		offset from row 0 used by the grid method in the loop
-	col: int
-		column
+		root: tk Root object
+			the window the widgets are displayed in
+		widget_list: list
+			list of widgets to be appended to 
+		input_list: list
+			list of input widgets to be appended to
+		offset: int
+			offset from row 0 used by the grid method
+		col: int
+			column used by grid method
 	
 	----returns----
-	widget_list:
-		widget_list with all elements added
-	input_list:
-			input_list with all elements added	
+		widget_list:
+			widget_list with all elements added
+		input_list:
+				input_list with all elements added	
 	'''
 	for i in range(0, len(widget_dict)):
 		widget_type = widget_dict[i]["widget"]
@@ -1283,8 +1282,8 @@ def remove_widgets(widget_list):
 	'''Deletes all widgets in a given list
 	
 	----arguments----
-	widget_list: list
-		list of widgets to be deleted
+		widget_list: list
+			list of widgets to be deleted
 	'''
 	for i in widget_list:
 		i.destroy()
@@ -1297,15 +1296,15 @@ def main():
 	taken through its main loop. 
 	
 	---variables/attributes defined inside---
-	py_list: manager list
-		 contains the information on what elements have been added by the user and the settings selected for them. Built in python, 
-		 and then used by OPAL to create the ring. structure is [[{"element_type": OPAL class name}, settings], ....]
-	OPAL_list: manager list
-		contains the name, start position, and end position of every element in the OPAL ring. Built up in OPAL, then used by python
-		to draw the ring OPAL generated. Structure is [[name, element_start, element_end], ....]
-	beam_list: manager list
-		contains the beam/distribution settings selected by the user. Built up in python, then used by OPAL when defining the beam
-		and distribution objects. Structure is [particle, gamma, [start_coords]]
+		py_list: manager list
+			 contains the information on what elements have been added by the user and the settings selected for them. Built in python, 
+			 and then used by OPAL to create the ring. structure is [[{"element_type": OPAL class name}, settings], ....]
+		OPAL_list: manager list
+			contains the name, start position, and end position of every element in the OPAL ring. Built up in OPAL, then used by python
+			to draw the ring OPAL generated. Structure is [[name, element_start, element_end], ....]
+		beam_list: manager list
+			contains the beam/distribution settings selected by the user. Built up in python, then used by OPAL when defining the beam
+			and distribution objects. Structure is [particle, gamma, [start_coords]]
 	"""
 	with mp.Manager() as manager:
 		py_list = manager.list([])

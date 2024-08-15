@@ -24,37 +24,38 @@ class Options_Window(tk.Toplevel):
 	def display_options(self, choice, ring_space, radius):
 		'''Displays the widgets for choosing the settings of whichever element has been selected
 		
-		For the element chosen in the GUI code, the correct widgets are selected from the ALL_OPTIONS dictionary which uses the element
-		name as a key. The list of widget dictionaries is then iterated through and each one displayed in the window. 
+		For the element chosen in the GUI code, the correct widgets are selected from the ALL_OPTIONS dictionary which 
+		uses the element name as a key. The list of widget dictionaries is then iterated through and each one displayed 
+		in the window. 
 		
 		----arguments----
-		choice: str
-			name of the element selected by user in GUI code
-		ring_space: float
-			space left in the ring. Used to calculate bounds on element settings
-		radius: float
-			radius of ring. Used to calculate bounds on element settings
+			choice: str
+				name of the element selected by user in GUI code
+			ring_space: float
+				space left in the ring. Used to calculate bounds on element settings
+			radius: float
+				radius of ring. Used to calculate bounds on element settings
 		
 		---variables/attributes defined inside---
-		max_length: float
-			maximum length a component can be. Used in ALL_OPTIONS
-		max_angle: float
-			maximum angle a component can occupy (from centre of ring). Used in ALL_OPTIONS
-		ALL_OPTIONS: dict
-			dictionary containing the list of widgets for each element. Structure is 
-			{"name of element":[{"widget": tkinter widget object, "options"{dict of widget arguments},....}],....}
-		options_dict: list
-			list of widget dictionaries corresponding to the element chosen (used as key)
-		scale_list: list
-			list of every widget requiring a user input
-		widget_list: list
-			list of all widgets displayed as part of setting selection
-		widget_type: str
-			Class name of widget (not instantiated)
-		options: dict
-			dictionary of widget arguments
-		widget: tkinter object
-			instantiated tkinter widget
+			max_length: float
+				maximum length a component can be. Used in ALL_OPTIONS
+			max_angle: float
+				maximum angle a component can occupy (from centre of ring). Used in ALL_OPTIONS
+			ALL_OPTIONS: dict
+				dictionary containing the list of widgets for each element. Structure is 
+				{"name of element":[{"widget": tkinter widget object, "options"{dict of widget arguments},...}],...}
+			options_dict: list
+				list of widget dictionaries corresponding to the element chosen
+			scale_list: list
+				list of every widget requiring a user input
+			widget_list: list
+				list of all widgets displayed as part of setting selection
+			widget_type: str
+				Class name of widget (not instantiated)
+			options: dict
+				dictionary of widget arguments
+			widget: tkinter object
+				instantiated tkinter widget
 		'''
 		self.choice = choice
 		self.ring_space = ring_space
@@ -79,19 +80,20 @@ class Options_Window(tk.Toplevel):
 	def multipole_more_options(self, chosen_settings):
 		'''Lets user select the field strength of each order in multipole
 		
-		Destroys previous widgets from selecting the length and number of orders, then creates a number of entry widgets equal to the
-		number of orders chosen by the user. slider_list is reset and filled with the entry widgets and labels created. Sliders and labels
-		are added to the screen inside a for loop. 
+		Destroys previous widgets from selecting the length and number of orders, then creates a number of entry widgets 
+		equal to the number of orders chosen. scale_list is reset and filled with the entry widgets created. Sliders and 
+		labels are added to the screen. 
 		
 		----arguments----
-		chosen_settings: list
-			list containing the settings chosen from the initial multipole options screen. Structure is [length, number of orders]
+			chosen_settings: list
+				list containing the settings chosen from the initial multipole options screen. Structure 
+				is [length, number of orders]
 		
 		---variables/attributes defined inside---
-		order: int
-			number of orders/entry widgets
-		label: tkinter Label object
-			label widget containing text depending on the order the slider below it is for		
+			order: int
+				number of orders/entry widgets
+			label: tkinter Label object
+				label widget containing text depending on the order the slider below it is for		
 		'''
 		for i in self.widget_list:
 			i.destroy()
@@ -115,20 +117,20 @@ class Options_Window(tk.Toplevel):
 	def beam_options(self, particle_choice):
 		'''Lets user choose beam/distribution settings
 		
-		Runs instead of choose_options if chosen in GUI code. Uses BEAM_SETUP, which is a list of widget dicionaries used for choosing
-		beam settings, as well as bounds for input widgets. Iterates through this list and displays widgets in the same way as
-		choose_options, using input_list instead of slider_list and beam_widget_list instead of widget_list. Also created an option menu
-		for choosing the particle type
+		Runs instead of choose_options if chosen in GUI code. Uses BEAM_SETUP, which is a list of widget dicionaries 
+		used for choosing beam settings. Iterates through this list and displays widgets in the same way as
+		choose_options, using input_list instead of scale_list and beam_widget_list instead of widget_list. Also 
+		creates an option menu for choosing the particle type
 		
 		----arguments----
-		particle_choice: tkinter StringVar object
-			contains particle currently displayed in particle choice menu
+			particle_choice: tkinter StringVar object
+				contains particle currently displayed in particle choice menu
 						
 		---variables/attributes defined inside---
-		input_list: list
-			list of all widgets prompting a user input
-		beam_widget_list: list
-			list of all widgets used to choose beam settings
+			input_list: list
+				list of all widgets prompting a user input
+			beam_widget_list: list
+				list of all widgets used to choose beam settings
 		'''
 		self.input_list = []
 		self.beam_widget_list = []
