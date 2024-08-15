@@ -16,6 +16,7 @@ import GUI_runner
 import numpy as np
 import opt_window
 import GUI_dicts
+from idlelib.tooltip import Hovertip #makes tooltips
 
 MAX_FLOAT = sys.float_info.max
 MIN_FLOAT = sys.float_info.min
@@ -29,11 +30,11 @@ BEAM_SETUP = GUI_dicts.BEAM_SETUP
 class Gui():
 	'''Class defining the GUI object
 	
-	Has all GUI widgets as attributes, as well as the runner being used, the 2 main windows, and several Boolean flags. 
-	Takes OPAL_list, py_list and beam_list as args. These are lists in the shared memory space between parent and child processes.
+	Has GUI widgets as attributes, as well as the runner being used, the 2 main windows, and several Boolean flags. Takes 
+	OPAL_list, py_list and beam_list as args. These are lists in the shared memory space between parent and child processes.
 	'''
 	def __init__(self, OPAL_list, py_list, beam_list):
-		'''Initiates the GUI object
+		'''Instantiates the GUI object
 		
 		Sets the intial values of key counters and flags, then calls the make_interface method. 
 		
@@ -80,6 +81,7 @@ class Gui():
 		if self.keep_window == False:
 			self.root = tk.Tk()	
 			self.end_button = tk.Button(self.root, text = "Finish Program", command = self.root.destroy)
+			end_tip = Hovertip(self.end_button, "close all windows")
 			self.end_button.grid(row = 0, column = 0)
 			self.invalid_label = tk.Label(self.root, text = "")
 		
@@ -107,6 +109,7 @@ class Gui():
 				
 		self.r_confirm = tk.Button(self.root, text = "Confirm settings", command = lambda: self.check_ring(OPAL_list, py_list, beam_list))
 		self.r_confirm.grid(row = 4 + len(BEAM_SETUP), column = 0)
+		r_tip = Hovertip(self.r_confirm, "confirm settings")
 		self.invalid_label.grid(row = 5 + len(BEAM_SETUP), column = 0)
 		
 	def check_ring(self, OPAL_list, py_list, beam_list):
@@ -122,11 +125,13 @@ class Gui():
 		
 		---variables/attributes defined inside---
 			radius: float
-				radius of ring (between 0 and 4 [m])
+				radius of ring [m]
 			beam_settings: list
-				array containing the validated beam settings (gamma, x, px, y, py, z, pz)
+				contains the validated beam settings (gamma, x, px, y, py, z, pz)
 			ring_widget_list: list
-				array containing all widgets used in setting up the beam
+				contains all widgets used in setting up the beam
+			invalid_flag: Bool
+				used whenever there is validation. True if any invalid input was encountered, False otherwise.
 		'''
 		#validate radius input
 		invalid_flag = False
@@ -161,6 +166,7 @@ class Gui():
 			self.keep_window = True
 			self.make_interface(OPAL_list, py_list, beam_list)
 			self.invalid_label.config(text = display_message)
+		#call set_beam if valid
 		else:
 			if self.ring_flag == False:
 				self.invalid_label.config(text = "")
@@ -170,7 +176,8 @@ class Gui():
 				self.set_beam(beam_list, particle, gamma, start_coords)
 			else:
 				self.set_beam(beam_list, beam_list[0], beam_list[1], beam_list[2])
-				
+			
+			#move to ring setup screen
 			self.setup_ring(OPAL_list, py_list, beam_list)
 	
 	def setup_ring(self, OPAL_list, py_list, beam_list):
@@ -199,7 +206,7 @@ class Gui():
 			cell_widgets: Bool
 				flag that says whether or not the widgets for making a cell are currently being displayed
 		'''
-		#instantiate minimal runner
+		#instantiate minimal runner and set some attributes
 		self.runner = GUI_runner.Runner(OPAL_list, py_list, beam_list)
 		self.runner.bend_direction = 1
 		self.runner.r0 = self.radius
@@ -207,7 +214,7 @@ class Gui():
 		self.runner.postprocess = self.runner.plots
 
 		
-		#set flags and attributes
+		#set flags and attributes for ring/cell
 		self.ring_space = self.radius * 2 * np.pi
 		self.full = False
 		self.made_cell = False
@@ -215,11 +222,11 @@ class Gui():
 		
 		#gives user option to make cell
 		self.make_cell_text = tk.Label(self.root, text = "Would you like to define a repeatable cell element?")
-		self.make_cell_text.grid(row = 1)
+		self.make_cell_text.grid(row = 1) 
 		self.make_cell_button = tk.Button(self.root, text = "yes", command = lambda: self.make_cell(OPAL_list, py_list, beam_list))
-		self.make_cell_button.grid(row = 2)
+		self.make_cell_button.grid(row = 2) 
 		self.continue_button = tk.Button(self.root, text = "no", command = lambda: self.design_ring(OPAL_list, py_list, beam_list))
-		self.continue_button.grid(row = 3)
+		self.continue_button.grid(row = 3) #skips to ring building screen
 		self.cell_widgets = True
 		
 	def make_cell(self, OPAL_list, py_list, beam_list):
@@ -235,9 +242,9 @@ class Gui():
 		
 		---variables/attributes defined inside---
 		cell_length_list: list
-			list containing the lengths of each element added to cell so the cell element can be deleted form the ring later on
+			contains the lengths of each element added to cell so the cell element can be deleted form the ring later on
 		cell: list
-			list containing every element in the cell and its settings
+			contains every element in the cell and its settings
 		cell_size: float
 			stores the current length of the cell
 		'''
@@ -247,7 +254,7 @@ class Gui():
 		self.continue_button.destroy()
 		self.cell_widgets = False
 		
-		#set cell attributes
+		#initialise cell attributes
 		self.cell_length_list = []
 		self.cell = []
 		self.cell_size = 0
@@ -260,42 +267,24 @@ class Gui():
 		self.info_label.grid(row = 1)
 		self.menu = tk.OptionMenu(self.root, choice, "Scaling FFA magnet", "Drift", "Multipole", "RF Cavity")
 		self.menu.grid(row = 2)
+		menu_tip = Hovertip(self.menu, "Choose element to add.")
 		
 		self.cell_label = tk.Label(self.root, text = "")
+		cell_label_tip = Hovertip(self.cell_label, "Elements in the cell \n(in order).")
 		self.cell_label.grid(row = 3)
 		self.cell_display = ""
 		
 		self.cell_confirm = tk.Button(self.root, text = "confirm cell", command = lambda: self.confirm_cell(OPAL_list, py_list, beam_list))
 		self.cell_confirm.grid(row = 7)
+		tip = Hovertip(self.cell_confirm, "Confirm and save your cell.")
 		
 		self.add_button = tk.Button(self.root, text = "Add element", command = lambda: self.add_element(choice, py_list))
 		self.add_button.grid(row = 5)
+		add_tip = Hovertip(self.add_button, "Add element shown in drop-down menu.")
 		
 		self.delete_button = tk.Button(self.root, text = "delete last element", command = lambda: self.delete_element(py_list))
 		self.delete_button.grid(row = 6)
-	
-	def update_with_element(self, py_list, new_element, display_settings, length, add):
-		display = ""
-		display += new_element
-		for key in display_settings:
-			display += ", " + key + ": " + str(display_settings[key]) 
-		display += "\n"
-		
-		if self.making_cell == True:
-			self.cell_display += display
-			self.cell_label.config(text = self.cell_display)
-			self.cell_length_list.append(length)
-			self.cell_size += length
-			self.cell.append(add)
-		else:
-			self.element_display += display
-			self.element_label.config(text = self.element_display)
-			self.ring_space -= length
-			self.space_label.config(text = "Ring space: " + str(self.ring_space))
-			self.space_list.append(length)
-			py_list.append(add)
-			
-		
+					
 	def confirm_cell(self, OPAL_list, py_list, beam_list):
 		'''Saves the cell and moves to the ring building screen.
 		
@@ -347,6 +336,8 @@ class Gui():
 		self.space_list = []
 		self.plot_button = tk.Button(self.root, text = "Run", command = lambda: self.fork(OPAL_list, py_list, beam_list))
 		self.plot_button.grid(row = 0, column = 1)
+		plot_tip = Hovertip(self.plot_button, "Run pyOpal and create field maps \nand a ring display window.")
+		
 		choice = tk.StringVar(self.root)
 		choice.set("Scaling FFA magnet")
 		self.info_label = tk.Label(self.root, text = "Add elements to build ring:")
@@ -357,12 +348,17 @@ class Gui():
 			self.menu = tk.OptionMenu(self.root, choice, "Scaling FFA magnet", "Drift", "Multipole", "RF Cavity", "Cell")
 		else:
 			self.menu = tk.OptionMenu(self.root, choice, "Scaling FFA magnet", "Drift", "Multipole", "RF Cavity")
+		menu_tip = Hovertip(self.menu, "Choose element to add.")
 			
 		self.menu.grid(row = 3, column = 0)
 		self.add_button = tk.Button(self.root, text = "Add element", command = lambda: self.add_element(choice, py_list))
 		self.add_button.grid(row = 5, column = 0)
+		add_tip = Hovertip(self.add_button, "Add element shown in drop-down menu.")
+		
 		self.element_label = tk.Label(self.root, text = "")
 		self.element_label.grid(row = 4, column = 0)
+		elem_label_tip = Hovertip(self.element_label, "Elements in the ring \n(in order).")
+		
 		self.delete_button = tk.Button(self.root, text = "delete last element", command = lambda: self.delete_element(py_list))
 		self.delete_button.grid(row = 6, column = 0)
 		self.element_display = ""
@@ -432,6 +428,7 @@ class Gui():
 			self.options_window = opt_window.Options_Window()
 			self.options_window.display_options(new_element, self.ring_space, self.radius)
 			self.confirm = tk.Button(self.options_window, text = "confirm settings", command = lambda: self.get_choices(self.options_window.scale_list, new_element, py_list))
+			confirm_tip = Hovertip(self.confirm, "Confirm settings.")
 			self.confirm.pack()
 	
 	def get_choices(self, scale_list, new_element, py_list):
@@ -487,7 +484,44 @@ class Gui():
 		else:
 			self.options_window.destroy()
 			self.invalid_label.config(text = display_message)
+
+	def update_with_element(self, py_list, new_element, display_settings, length, add):
+		'''Updates displays and the relevant list with element added
 		
+		If the element was added to the cell, cell_display gets updated and the element is appended to the cell list. If added
+		to the ring, element_display is updated and the element appended to py_list. The length is added to cell_size and appended
+		to cell_space_list if added to the cell, and subtracted from ring_space and appended to space_list if added to the ring. 
+		
+		----arguments----
+			new_element: str
+				name of element added
+			display_settings: dict
+				dictionary of settings and their values that are to be displayed on screen
+			length: float
+				length of element added
+			add: list
+				data added to py_list or cell. Structure is [{"element_type": pyOpal object, "length":length}, settings] 
+		'''
+		display = ""
+		display += new_element
+		for key in display_settings:
+			display += ", " + key + ": " + str(display_settings[key]) 
+		display += "\n"
+		
+		if self.making_cell == True:
+			self.cell_display += display
+			self.cell_label.config(text = self.cell_display)
+			self.cell_length_list.append(length)
+			self.cell_size += length
+			self.cell.append(add)
+		else:
+			self.element_display += display
+			self.element_label.config(text = self.element_display)
+			self.ring_space -= length
+			self.space_label.config(text = "Ring space: " + str(self.ring_space))
+			self.space_list.append(length)
+			py_list.append(add)
+				
 	def get_orders(self, py_list):
 		'''Lets user choose the field strength of each pole in a multipole element
 		
@@ -980,10 +1014,13 @@ class Gui():
 		#Make new widgets
 		self.reset_ring_button = tk.Button(self.root, text = "reset ring", command = lambda: self.reset_ring(OPAL_list, py_list, beam_list))
 		self.reset_ring_button.grid(row = 9, column = 0)
+		ring_tip = Hovertip(self.reset_ring_button, "Choose new ring settings \n(beam unchanged).")
 		self.reset_beam = tk.Button(self.root, text = "Change beam", command = lambda: self.change_beam(beam_list, False))
 		self.reset_beam.grid(row = 6, column = 2)
+		beam_tip = Hovertip(self.reset_beam, "Choose new beam settings \n(ring unchanged).")
 		self.restart_button = tk.Button(self.root, text = "reset all", command = lambda: self.reset(OPAL_list, py_list, beam_list))
 		self.restart_button.grid(row = 2, column = 1)
+		reset_tip = Hovertip(self.restart_button, "Reset all and start again.")
 		
 		self.cart_img = tk.Label(self.root, image = self.cart_photo) #update plot images
 		self.cart_img.grid(row = 10, column = 0)
