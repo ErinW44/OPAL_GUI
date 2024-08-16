@@ -242,7 +242,7 @@ def define_bounds_dict(radius):
 		"Multipole": [
 		  [
 		    0,
-		    MAX_FLOAT
+		    radius/2
 		  ],
 		  [
 		    0,
@@ -597,7 +597,7 @@ def make_all_options(max_angle, radius):
 			{
 				"widget":tk.Label, 
 				"options":{
-					"text":"length (above 0 [m])"
+					"text":"length (0 to " + str(radius/2) + " [m])"
 					}
 			}, 
 			{
