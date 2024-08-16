@@ -1,7 +1,17 @@
+'''File containing / building the main data structures used in the GUI
+
+Defines all constant data structures, and functions for building any that are variable. Most data structures are /
+contain dictionaries, and are written in the JSON format. 
+
+The constant structures are BEAM_SETUP and COLOURS_KEY. 
+BEAM_SETUP contains a list of widget arrays, and is used to display the relevant widgets when choosing beam settings
+in the Gui or Options_Window classes. It's structure is: [{"widget":widget name, "options":{widget args}}, ...].
+COLOURS_KEY is used in the RingDisplay class to define the colour of each element, and to build the key. Its structure
+is: ["OPAL class name" : [colour, name to be shown in key], ....].
+
+The description of all variable structures is given in the docstring of the functions building them. 
 '''
-Module containing all constant dictionaries, and functions for creating all dictionaries whose values depend on GUI / OPAL
-variables. 
-'''
+
 import tkinter as tk
 import sys
 import numpy as np

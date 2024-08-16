@@ -1,3 +1,13 @@
+'''This file contains the Options_Window class.
+
+Contains the Options_Window class, which defines a Toplevel window that grabs the focus from the main window 
+defined in GUI_prototype_10.py. The Options_Window class uses a list of widget dictionaries corresponding to the 
+element added by the Gui class to display the relevant widgets for choosing the element's settings. This is done in
+the display_elements method. Multipoles and RF cavities require more than 1 options window, and these are handled in
+their own methods. The beam options window is controlled by the beam_options method. Note that the confirm buttons
+for these windows aren't defined in the Options_Window class, and rather by the Gui class, as they are bound to Gui
+methods.
+'''
 
 #import modules
 import tkinter as tk

@@ -1,3 +1,14 @@
+'''File containing the RingDisplay class
+
+Contains the RingDisplay class, which is used to make a window with a visual representation of how OPAL has placed
+elements around the ring drawn on it. The file also contains the Circle class, which draws a circle in the middle of 
+the canvas with the radius defined by the user.
+
+The RingDisplay class is called by the Gui class after OPAL is run. The method draw_OPAL uses OPAL list to draw each 
+element on a canvas in its window (details in docstring). The class also contains a method for finding the angle around
+the ring an element is at.  
+'''
+
 import numpy as np
 import tkinter as tk
 import GUI_dicts

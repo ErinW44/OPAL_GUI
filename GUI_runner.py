@@ -1,3 +1,19 @@
+'''File containing the OPAL Runner class used for the GUI
+
+Contains the Runner class used in the GUI, which inherits from the runner in test_track_run_scaling_ffa.py (and in turn
+MinimalRunner). This controls the running of OPAL by overloading methods defining OPAL objects to fit the function of the
+GUI, and controlling the sequence in which they run. Some methods are only overloaded to include OPAL_list, py_list or
+beam_list as arguments, whilst others have functionality added or modified. 
+
+make_beam is modified so that it sets beam attributes from user inputs (in beam_list), and make_distribution is modified so
+the distribution string to be used is defined by the starting coordinates and momenta chosen by the user. make_element_iterable
+is overloaded so that it builds the iterable object by adding every element in py_list with the attributes chosen by the user. 
+execute is overloaded so that it builds OPAL_list by getting the name, start position and end position of all elements in the OPAL
+line object and appends them. 
+
+A function is also added for field maps, which uses the FieldMapper class from ffa_field_mapper_2.py
+'''
+
 #import modules
 import pyopal.elements.local_cartesian_offset
 import pyopal.elements.scaling_ffa_magnet

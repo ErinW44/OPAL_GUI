@@ -1,3 +1,24 @@
+'''Main file for pyOpal GUI. Contains Gui class and main() function
+
+This file contains the Gui class, main() function, and two validation functions. Inside main(), a manager is defined using
+the multiprocessing package, as well as 3 lists in shared memory: py_list, OPAL_list and beam_list. The structure of these is
+described in the main() docstring, and they can be accessed and edited by all processes throughout.
+
+The Gui class defines the main window of the interface and controls the overall flow of the code. It opens the initial
+settings screen when initialised, and contains the screens for building a repeatable cell element and the full ring. All 
+inputs are validated in the Gui class, but the options windows for individual elements (or the beam when changed alone) are
+opened in the Options_Window class (in opt_window.py). The Gui class builds up py_list in shared memory with the details of 
+every added element. Thich is then used in OPAL to build the line object. The majority of widgets are defined as attributed 
+of the Gui class, as they need editing and accessing individually in many parts of the code and defining them as variables 
+would require each method to have too many arguments. These widgets aren't listed in the docstrings. For adding elements, the
+Gui class uses the options window in a general method called add_element, and gets the inputs using get_options. There is then
+a method for each element that builds its settings dictionary and the list to be appended to py_list from the options chosen. 
+
+This file also contains the following functions: validate(), validation_loop(), a display_widgets() and remove_widgets(). The
+first 2 are used to validate a single input and a set of inputs, respectively. The latter 2 are used to display or delete a set
+of widgets stored in a list of widget dictionaries (structure of these explained in docstrings)
+'''
+
 #import modules
 import tkinter as tk
 import multiprocessing as mp

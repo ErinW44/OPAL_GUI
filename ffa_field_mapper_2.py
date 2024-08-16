@@ -1,3 +1,9 @@
+'''Modified version of ffa_field_mapper.py
+
+Contains a modified FFAFieldMapper class, whose field_map_cartesian function also plots the beam trajectory from
+the track data file. 
+'''
+
 import os
 import math
 
