@@ -652,7 +652,7 @@ class Gui():
 		radial_neg_extent = self.chosen_settings[5]
 		radial_pos_extent = self.chosen_settings[6]
 		
-		f_end = f_centre_length + f_end_length * 4
+		f_end = f_start + f_centre_length + f_end_length * 4
 		self.ring_space -= f_end
 
 		settings = {

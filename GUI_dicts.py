@@ -184,7 +184,7 @@ def define_bounds_dict(radius):
 		"Drift": [
 		  [
 		    MIN_FLOAT,
-		    2 * np.pi
+		    np.pi
 		  ]
 		],
 		"RF Cavity": [
