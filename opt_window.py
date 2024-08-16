@@ -66,7 +66,7 @@ class Options_Window(tk.Toplevel):
 		'''
 		self.choice = choice
 		self.radius = radius
-		max_angle = round(2 * np.pi, 2)
+		max_angle = round(np.pi, 2)
 		
 		ALL_OPTIONS = GUI_dicts.make_all_options(max_angle, self.radius)
 		self.options_dict = ALL_OPTIONS[choice]
