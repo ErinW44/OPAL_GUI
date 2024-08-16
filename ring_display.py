@@ -140,13 +140,32 @@ class RingDisplay(tk.Toplevel):
 		return angle
 	
 	def make_key(self):
-		self.key_label = tk.Label(self, text = "")
-		self.key_text = "---key---\n"
-		self.key_label.pack()
-		for key in COLOURS_KEY:
-			self.key_text += COLOURS_KEY[key][1] + ": " + COLOURS_KEY[key][0] + "\n"
-		self.key_label.configure(text = self.key_text)
+		'''Makes a key for the colours of each element
 		
+		Defines a tkinter Text object for the key. Iterates through COLOURS_KEY with enumerate, and adds a line
+		to the key for each iteration. This line contains the colour and the element name it corresponds to. The
+		lines are added using the insert method of the Text class. The colour of the word "red" is set to red etc 
+		by defining a tag around that word with a unique name. The tag is then configured to change the colour of
+		the text inside it. 
+		
+		---variables/attributes defined inside---
+			index: int
+				integer incrementing for each iteration through the for loop. Starts at 2
+			key: str
+				key in the COLOURS_KEY dictionary
+			name: str
+				unique name for each tag. It is the string of index
+		'''
+		self.key_text = tk.Text(self)
+		self.key_text.insert(1.0, "---key---\n")
+		self.key_text.pack()
+		for index, key in enumerate(COLOURS_KEY, 2):
+			index = float(index)
+			self.key_text.insert(index, COLOURS_KEY[key][0] + ": " + COLOURS_KEY[key][1] + "\n")
+			name = str(index)
+			self.key_text.tag_add(name, index, index + len(COLOURS_KEY[key][0])/10)
+			self.key_text.tag_config(name, foreground = COLOURS_KEY[key][0])
+
 class Circle:
 	'''Class containing the circle representing the ring
 	'''

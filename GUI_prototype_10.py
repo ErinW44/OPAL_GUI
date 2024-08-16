@@ -1,4 +1,4 @@
-'''Main file for pyOpal GUI. Contains Gui class and main() function
+'''Main file for pyOpal GUI. Contains Gui class, main() function, and 4 other functions
 
 This file contains the Gui class, main() function, and two validation functions. Inside main(), a manager is defined using
 the multiprocessing package, as well as 3 lists in shared memory: py_list, OPAL_list and beam_list. The structure of these is

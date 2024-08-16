@@ -110,7 +110,7 @@ COLOURS_KEY ={
     						"multipole"
     					],
     "VARIABLE_RF_CAVITY": [
-    						"yellow", 
+    						"orange", 
     						"RF cavity"
     					]
   }
