@@ -71,6 +71,8 @@ class RingDisplay(tk.Toplevel):
 				coordinates of the second polygon point (above start point)
 			x_2, y_2: floats
 				coordinates of third polygon point (above end point)
+			length_to_corner: float
+				length from start point to first corner
 			colour: str
 				colour of the element from COLOURS_KEY dictionary
 			points: list
@@ -93,12 +95,16 @@ class RingDisplay(tk.Toplevel):
 			end_angle = self.find_angle(end_x, end_y)
 			angle_diff = np.abs(start_angle - end_angle)
 			width = circle_radius * np.sqrt(2*(1 - np.cos(angle_diff)))
+			test_width = (width / circle_radius) * self.radius
 			
-			x_1 = start_x + width * np.cos(start_angle)
-			y_1 = start_y + width * np.sin(start_angle)
-			x_2 = end_x + width * np.cos(start_angle)
-			y_2 = end_y + width * np.sin(start_angle)
+			length_to_corner = np.sqrt(width**2 + circle_radius**2 - 2*width*circle_radius*np.cos(np.pi - angle_diff/2))
 			
+			x_1 = (length_to_corner * np.cos(start_angle + angle_diff/4)) + 300
+			y_1 = -(length_to_corner * np.sin(start_angle + angle_diff/4)) + 300
+		
+			x_2 = end_x + x_1 - start_x
+			y_2 = end_y + y_1 - start_y			
+
 			colour = COLOURS_KEY[name][0]
 			points = [start_x, start_y, x_1, y_1, x_2, y_2, end_x, end_y]
 			element = self.canvas_2.create_polygon(points, fill = colour)
@@ -127,7 +133,7 @@ class RingDisplay(tk.Toplevel):
 		length_b = np.sqrt((delta_x + self.radius)**2 + delta_y **2)
 		cos_angle = (self.radius**2 + length_b **2 - length_a **2)/(2*self.radius*length_b)
 		angle = np.arccos(cos_angle)
-		if delta_y < 0:
+		if delta_y > 0:
 			angle = (2*np.pi) - angle
 		return angle
 	
